@@ -88,3 +88,117 @@ output "node-pool-kubernetes-version" {
 output "node-shape" {
   value = oci_containerengine_node_pool.oke-node-pool.node_shape
 }
+
+
+
+
+# Data source to get current region
+
+
+output "artifact_registry_repository_name" {
+    description = "Name of the artifact registry repository"
+    value       = oci_artifacts_container_repository.livekit_repository.display_name
+}
+
+output "artifact_registry_repository_ocid" {
+    description = "OCID of the artifact registry repository"
+    value       = oci_artifacts_container_repository.livekit_repository.id
+}
+
+output "artifact_registry_namespace" {
+    description = "Artifact registry namespace"
+    value       = data.oci_artifacts_container_configuration.container_configuration.namespace
+}
+
+output "container_registry_url" {
+    description = "Container registry URL for pushing/pulling images"
+    value       = "${var.region}.ocir.io/${data.oci_artifacts_container_configuration.container_configuration.namespace}/${oci_artifacts_container_repository.livekit_repository.display_name}"
+    sensitive   = true
+}
+
+output "container_registry_path" {
+    description = "Container registry path (without region prefix)"
+    value       = "${data.oci_artifacts_container_configuration.container_configuration.namespace}/${oci_artifacts_container_repository.livekit_repository.display_name}"
+}
+
+output "dynamic_group_instances_ocid" {
+    description = "OCID of the dynamic group for instances"
+    value       = oci_identity_dynamic_group.livekit_instances.id
+}
+
+output "dynamic_group_oke_cluster_ocid" {
+    description = "OCID of the dynamic group for OKE cluster"
+    value       = oci_identity_dynamic_group.livekit_oke_cluster.id
+}
+
+
+# Build Pipeline Outputs
+output "build_pipeline_name" {
+    description = "Name of the build pipeline"
+    value       = oci_devops_build_pipeline.livekit_build_pipeline.display_name
+}
+
+output "build_pipeline_ocid" {
+    description = "OCID of the build pipeline"
+    value       = oci_devops_build_pipeline.livekit_build_pipeline.id
+}
+
+# Deploy Pipeline Outputs
+output "deploy_pipeline_name" {
+    description = "Name of the deploy pipeline"
+    value       = oci_devops_deploy_pipeline.livekit_deploy_pipeline.display_name
+}
+
+output "deploy_pipeline_ocid" {
+    description = "OCID of the deploy pipeline"
+    value       = oci_devops_deploy_pipeline.livekit_deploy_pipeline.id
+}
+
+# Code Repository Outputs
+output "code_repository_name" {
+    description = "Name of the code repository"
+    value       = oci_devops_repository.livekit_code_repo.name
+}
+
+output "code_repository_ocid" {
+    description = "OCID of the code repository"
+    value       = oci_devops_repository.livekit_code_repo.id
+}
+
+output "code_repository_http_url" {
+    description = "HTTP clone URL for the code repository"
+    value       = oci_devops_repository.livekit_code_repo.http_url
+}
+
+output "code_repository_ssh_url" {
+    description = "SSH clone URL for the code repository"
+    value       = oci_devops_repository.livekit_code_repo.ssh_url
+}
+
+# OKE Environment Outputs
+output "oke_environment_name" {
+    description = "Name of the OKE deployment environment"
+    value       = oci_devops_deploy_environment.oke_environment.display_name
+}
+
+output "oke_environment_ocid" {
+    description = "OCID of the OKE deployment environment"
+    value       = oci_devops_deploy_environment.oke_environment.id
+}
+
+# Notification Topic Outputs
+output "devops_notification_topic_name" {
+    description = "Name of the DevOps notification topic"
+    value       = oci_ons_notification_topic.devops_notifications.name
+}
+
+output "devops_notification_topic_ocid" {
+    description = "OCID of the DevOps notification topic"
+    value       = oci_ons_notification_topic.devops_notifications.id
+}
+
+# Dynamic Group Output
+output "devops_dynamic_group_ocid" {
+    description = "OCID of the DevOps services dynamic group"
+    value       = oci_identity_dynamic_group.devops_services.id
+}
