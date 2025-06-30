@@ -85,14 +85,37 @@ resource "oci_devops_deploy_environment" "oke_environment" {
     }
 }
 
-# Artifact repository for build artifacts
-resource "oci_devops_repository" "livekit_code_repo" {
-    name            = "livekit-agent-code"
-    project_id      = oci_devops_project.livekit_devops_project.id
-    repository_type = "HOSTED"
-    description     = "Source code repository for LiveKit agent"
 
-    default_branch = "main"
+# External connection to GitHub
+resource "oci_devops_connection" "github_connection" {
+    connection_type = "GITHUB_ACCESS_TOKEN"
+    project_id      = oci_devops_project.livekit_devops_project.id
+    display_name    = "livekit-github-connection"
+    description     = "GitHub connection for LiveKit agent repository"
+    
+    username =  "rafanegrette"
+    access_token = oci_vault_secret.github_pat_secret.id
+
+    freeform_tags = {
+        "Environment" = "development"
+        "Project"     = "livekit"
+    }
+}
+
+# External repository reference
+resource "oci_devops_repository" "livekit_external_repo" {
+    name               = "livekit-agent-external"
+    project_id         = oci_devops_project.livekit_devops_project.id
+    repository_type    = "MIRRORED"
+    description        = "External GitHub repository for LiveKit agent"
+    
+    mirror_repository_config {
+        connector_id    = oci_devops_connection.github_connection.id
+        repository_url  = "https://github.com/rafanegrette/sophi-livekit"
+        trigger_schedule {
+            schedule_type   = "DEFAULT"
+        }
+    }
 
     freeform_tags = {
         "Environment" = "development"

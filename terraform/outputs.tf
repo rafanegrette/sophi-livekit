@@ -154,26 +154,6 @@ output "deploy_pipeline_ocid" {
     value       = oci_devops_deploy_pipeline.livekit_deploy_pipeline.id
 }
 
-# Code Repository Outputs
-output "code_repository_name" {
-    description = "Name of the code repository"
-    value       = oci_devops_repository.livekit_code_repo.name
-}
-
-output "code_repository_ocid" {
-    description = "OCID of the code repository"
-    value       = oci_devops_repository.livekit_code_repo.id
-}
-
-output "code_repository_http_url" {
-    description = "HTTP clone URL for the code repository"
-    value       = oci_devops_repository.livekit_code_repo.http_url
-}
-
-output "code_repository_ssh_url" {
-    description = "SSH clone URL for the code repository"
-    value       = oci_devops_repository.livekit_code_repo.ssh_url
-}
 
 # OKE Environment Outputs
 output "oke_environment_name" {
@@ -201,4 +181,26 @@ output "devops_notification_topic_ocid" {
 output "devops_dynamic_group_ocid" {
     description = "OCID of the DevOps services dynamic group"
     value       = oci_identity_dynamic_group.devops_services.id
+}
+
+
+output "github_connection_name" {
+    description = "Name of the GitHub connection"
+    value       = oci_devops_connection.github_connection.display_name
+}
+
+output "github_connection_ocid" {
+    description = "OCID of the GitHub connection"
+    value       = oci_devops_connection.github_connection.id
+}
+
+# External Repository Outputs
+output "external_repository_name" {
+    description = "Name of the external GitHub repository"
+    value       = oci_devops_repository.livekit_external_repo.name
+}
+
+output "external_repository_ocid" {
+    description = "OCID of the external GitHub repository"
+    value       = oci_devops_repository.livekit_external_repo.id
 }

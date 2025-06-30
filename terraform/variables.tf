@@ -27,3 +27,9 @@ variable "region" {
   description = "Region host of the resources in oci"
   sensitive   = true
 }
+
+variable "github_access_token" {
+  type        = string
+  description = "GitHub Personal Access Token for repository access"
+  sensitive   = true
+}
