@@ -1,0 +1,53 @@
+version: 0.1
+component: build
+timeoutInSeconds: 6000
+runAs: root
+shell: bash
+
+env:
+  variables:
+    DOCKER_REGISTRY: "${REGISTRY_URL}"
+    IMAGE_NAME: "${IMAGE_NAME}"
+    BUILDRUN_HASH: "${OCI_BUILD_RUN_ID}"
+
+steps:
+  - type: Command
+    name: "Install Docker"
+    timeoutInSeconds: 300
+    command: |
+      echo "Installing Docker..."
+      yum update -y
+      yum install -y docker
+      systemctl start docker
+      systemctl enable docker
+      usermod -aG docker opc
+
+  - type: Command
+    name: "Build Docker Image"
+    timeoutInSeconds: 1800
+    command: |
+      echo "Building Docker image..."
+      cd voice-pipeline-agent-python
+      docker build -t ${DOCKER_REGISTRY}/${OCI_RESOURCE_PRINCIPAL_REGION}.ocir.io/${TENANCY_NAMESPACE}/${IMAGE_NAME}:${BUILDRUN_HASH} .
+      docker build -t ${DOCKER_REGISTRY}/${OCI_RESOURCE_PRINCIPAL_REGION}.ocir.io/${TENANCY_NAMESPACE}/${IMAGE_NAME}:latest .
+
+  - type: Command
+    name: "Login to Container Registry"
+    timeoutInSeconds: 300
+    command: |
+      echo "Logging into OCI Container Registry..."
+      echo $OCI_RESOURCE_PRINCIPAL_REGION
+      docker login ${OCI_RESOURCE_PRINCIPAL_REGION}.ocir.io --username ${TENANCY_NAMESPACE}/oracleidentitycloudservice/${USER_NAME} --password-stdin <<< "${OCI_RESOURCE_PRINCIPAL_TOKEN}"
+
+  - type: Command
+    name: "Push Docker Image"
+    timeoutInSeconds: 1800
+    command: |
+      echo "Pushing Docker image to registry..."
+      docker push ${OCI_RESOURCE_PRINCIPAL_REGION}.ocir.io/${TENANCY_NAMESPACE}/${IMAGE_NAME}:${BUILDRUN_HASH}
+      docker push ${OCI_RESOURCE_PRINCIPAL_REGION}.ocir.io/${TENANCY_NAMESPACE}/${IMAGE_NAME}:latest
+
+outputArtifacts:
+  - name: livekit_agent_image
+    type: DOCKER_IMAGE
+    location: ${OCI_RESOURCE_PRINCIPAL_REGION}.ocir.io/${TENANCY_NAMESPACE}/${IMAGE_NAME}:${BUILDRUN_HASH}
