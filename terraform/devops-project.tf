@@ -227,3 +227,76 @@ resource "oci_devops_deploy_environment" "oke_environment" {
         "Project"     = "livekit"
     }
 }
+
+
+resource "oci_devops_deploy_artifact" "kubernetes_manifest_artifact" {
+    project_id = oci_devops_project.livekit_devops_project.id
+    display_name = "livekit-kubernetes-manifests"
+    deploy_artifact_type = "KUBERNETES_MANIFEST"
+    argument_substitution_mode = "SUBSTITUTE_PLACEHOLDERS"
+
+    deploy_artifact_source {
+        deploy_artifact_source_type = "GENERIC_ARTIFACT"
+        repository_id = oci_devops_repository.livekit_external_repo.id
+        deploy_artifact_path = "voice-pipeline-agent-python/k8s-manifests"
+        deploy_artifact_version = "latest"
+    }
+    
+    freeform_tags = {
+        "Environment" = "development"
+        "Project"     = "livekit"
+    }
+}
+
+# Deploy stage using Helm charts
+resource "oci_devops_deploy_stage" "kubernetes_deploy_stage" {
+    deploy_pipeline_id = oci_devops_deploy_pipeline.livekit_deploy_pipeline.id
+    deploy_stage_type = "OKE_DEPLOYMENT"
+    display_name = "Deploy to OKE using Kubernetes Manifests"
+    description = "Deploy LiveKit agent to OKE cluster using Kubernetes manifests"
+    
+    deploy_stage_predecessor_collection {
+        items {
+            id = oci_devops_deploy_pipeline.livekit_deploy_pipeline.id
+        }
+    }
+    
+    # Configuration for OKE Kubernetes manifest deployment
+    oke_cluster_deploy_environment_id = oci_devops_deploy_environment.oke_environment.id
+    kubernetes_manifest_deploy_artifact_ids = [oci_devops_deploy_artifact.kubernetes_manifest_artifact.id]
+    
+    namespace = "$${NAMESPACE}"
+    
+    # Rollback policy
+    rollback_policy {
+        policy_type = "AUTOMATED_STAGE_ROLLBACK_POLICY"
+    }
+    
+    freeform_tags = {
+        "Environment" = "development"
+        "Project"     = "livekit"
+    }
+}
+
+# Connect build pipeline to deploy pipeline
+resource "oci_devops_build_pipeline_stage" "trigger_deployment_stage" {
+    build_pipeline_id = oci_devops_build_pipeline.livekit_build_pipeline.id
+    build_pipeline_stage_type = "TRIGGER_DEPLOYMENT_PIPELINE"
+    display_name = "Trigger Deployment"
+    description = "Trigger deployment pipeline after successful build"
+    
+    build_pipeline_stage_predecessor_collection {
+        items {
+            id = oci_devops_build_pipeline_stage.deliver_artifacts_stage.id
+        }
+    }
+    
+    # Direct configuration for triggering deployment pipeline
+    deploy_pipeline_id = oci_devops_deploy_pipeline.livekit_deploy_pipeline.id
+    is_pass_all_parameters_enabled = true
+    
+    freeform_tags = {
+        "Environment" = "development"
+        "Project"     = "livekit"
+    }
+}
