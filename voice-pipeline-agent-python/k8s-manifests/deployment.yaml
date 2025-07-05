@@ -1,0 +1,20 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: livekit-agent
+  namespace: ${NAMESPACE}
+spec:
+  replicas: ${REPLICAS}
+  selector:
+    matchLabels:
+      app: livekit-agent
+  template:
+    metadata:
+      labels:
+        app: livekit-agent
+    spec:
+      containers:
+      - name: livekit-agent
+        image: ${var.region}.ocir.io/${data.oci_artifacts_container_configuration.container_configuration.namespace}/${oci_artifacts_container_repository.livekit_repository.display_name}:${BUILDRUN_HASH}
+        ports:
+        - containerPort: 8080
