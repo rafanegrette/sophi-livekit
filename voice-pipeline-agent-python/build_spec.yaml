@@ -30,8 +30,10 @@ steps:
     command: |
       echo "Building Docker image..."
       cd voice-pipeline-agent-python
-      docker build -t ${DOCKER_REGISTRY}/${OCI_RESOURCE_PRINCIPAL_REGION}.ocir.io/${TENANCY_NAMESPACE}/${IMAGE_NAME}:${BUILDRUN_HASH} .
-      docker build -t ${DOCKER_REGISTRY}/${OCI_RESOURCE_PRINCIPAL_REGION}.ocir.io/${TENANCY_NAMESPACE}/${IMAGE_NAME}:latest .
+      # Convert IMAGE_NAME to lowercase to avoid Docker tag issues
+      IMAGE_NAME_LOWER=$(echo "${IMAGE_NAME}" | tr '[:upper:]' '[:lower:]')
+      docker build -t ${OCI_RESOURCE_PRINCIPAL_REGION}.ocir.io/${TENANCY_NAMESPACE}/${IMAGE_NAME_LOWER}:${BUILDRUN_HASH} .
+      docker build -t ${OCI_RESOURCE_PRINCIPAL_REGION}.ocir.io/${TENANCY_NAMESPACE}/${IMAGE_NAME_LOWER}:latest .
 
   - type: Command
     name: "Login to Container Registry"
@@ -46,8 +48,9 @@ steps:
     timeoutInSeconds: 1800
     command: |
       echo "Pushing Docker image to registry..."
-      docker push ${OCI_RESOURCE_PRINCIPAL_REGION}.ocir.io/${TENANCY_NAMESPACE}/${IMAGE_NAME}:${BUILDRUN_HASH}
-      docker push ${OCI_RESOURCE_PRINCIPAL_REGION}.ocir.io/${TENANCY_NAMESPACE}/${IMAGE_NAME}:latest
+      IMAGE_NAME_LOWER=$(echo "${IMAGE_NAME}" | tr '[:upper:]' '[:lower:]')
+      docker push ${OCI_RESOURCE_PRINCIPAL_REGION}.ocir.io/${TENANCY_NAMESPACE}/${IMAGE_NAME_LOWER}:${BUILDRUN_HASH}
+      docker push ${OCI_RESOURCE_PRINCIPAL_REGION}.ocir.io/${TENANCY_NAMESPACE}/${IMAGE_NAME_LOWER}:latest
 
 outputArtifacts:
   - name: livekit_agent_image
