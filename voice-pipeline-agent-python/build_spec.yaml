@@ -25,15 +25,43 @@ steps:
       echo "Docker installation completed"
 
   - type: Command
+    name: "Debug Environment Variables"
+    timeoutInSeconds: 300
+    command: |
+      echo "=== Debugging Environment Variables ==="
+      echo "OCI_RESOURCE_PRINCIPAL_REGION: ${OCI_RESOURCE_PRINCIPAL_REGION}"
+      echo "TENANCY_NAMESPACE: ${TENANCY_NAMESPACE}"
+      echo "IMAGE_NAME: ${IMAGE_NAME}"
+      echo "OCI_BUILD_RUN_ID: ${OCI_BUILD_RUN_ID}"
+      echo "BUILDRUN_HASH: ${BUILDRUN_HASH}"
+      echo "All environment variables:"
+      env | grep -E "(OCI_|TENANCY|IMAGE|BUILD)" | sort
+      echo "=== End Debug ==="
+
+  - type: Command
     name: "Build Docker Image"
     timeoutInSeconds: 1800
     command: |
       echo "Building Docker image..."
       cd voice-pipeline-agent-python
+            # Check if required variables are set
+      if [ -z "${TENANCY_NAMESPACE}" ]; then
+        echo "ERROR: TENANCY_NAMESPACE is not set"
+        exit 1
+      fi
+      
+      if [ -z "${IMAGE_NAME}" ]; then
+        echo "ERROR: IMAGE_NAME is not set"
+        exit 1
+      fi
+      
+      if [ -z "${OCI_BUILD_RUN_ID}" ]; then
+        echo "ERROR: OCI_BUILD_RUN_ID is not set"
+        exit 1
+      fi
       # Convert IMAGE_NAME to lowercase to avoid Docker tag issues
-      IMAGE_NAME_LOWER=$(echo "${IMAGE_NAME}" | tr '[:upper:]' '[:lower:]')
-      docker build -t ${OCI_RESOURCE_PRINCIPAL_REGION}.ocir.io/${TENANCY_NAMESPACE}/${IMAGE_NAME_LOWER}:${BUILDRUN_HASH} .
-      docker build -t ${OCI_RESOURCE_PRINCIPAL_REGION}.ocir.io/${TENANCY_NAMESPACE}/${IMAGE_NAME_LOWER}:latest .
+      docker build -t ${OCI_RESOURCE_PRINCIPAL_REGION}.ocir.io/${TENANCY_NAMESPACE}/${IMAGE_NAME}:${BUILDRUN_HASH} .
+      docker build -t ${OCI_RESOURCE_PRINCIPAL_REGION}.ocir.io/${TENANCY_NAMESPACE}/${IMAGE_NAME}:latest .
 
   - type: Command
     name: "Login to Container Registry"
@@ -48,9 +76,8 @@ steps:
     timeoutInSeconds: 1800
     command: |
       echo "Pushing Docker image to registry..."
-      IMAGE_NAME_LOWER=$(echo "${IMAGE_NAME}" | tr '[:upper:]' '[:lower:]')
-      docker push ${OCI_RESOURCE_PRINCIPAL_REGION}.ocir.io/${TENANCY_NAMESPACE}/${IMAGE_NAME_LOWER}:${BUILDRUN_HASH}
-      docker push ${OCI_RESOURCE_PRINCIPAL_REGION}.ocir.io/${TENANCY_NAMESPACE}/${IMAGE_NAME_LOWER}:latest
+      docker push ${OCI_RESOURCE_PRINCIPAL_REGION}.ocir.io/${TENANCY_NAMESPACE}/${IMAGE_NAME}:${BUILDRUN_HASH}
+      docker push ${OCI_RESOURCE_PRINCIPAL_REGION}.ocir.io/${TENANCY_NAMESPACE}/${IMAGE_NAME}:latest
 
 outputArtifacts:
   - name: livekit_agent_image
