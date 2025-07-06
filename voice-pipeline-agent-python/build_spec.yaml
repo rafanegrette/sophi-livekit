@@ -32,11 +32,11 @@ steps:
       cd voice-pipeline-agent-python
       
       # Get tenancy namespace
-      echo "Using tenancy namespace: ${OCI_NAMESPACE}"
+      echo "Using tenancy namespace: ${tenancyName}"
       
       # Build images
-      docker build -t ${OCI_RESOURCE_PRINCIPAL_REGION}.ocir.io/${OCI_NAMESPACE}/${imageName}:${OCI_BUILD_RUN_ID} .
-      docker build -t ${OCI_RESOURCE_PRINCIPAL_REGION}.ocir.io/${OCI_NAMESPACE}/${imageName}:latest .
+      docker build -t ${DOCKER_REGISTRY}/${imageName}:${OCI_BUILD_RUN_ID} .
+      docker build -t ${DOCKER_REGISTRY}/${imageName}:latest .
 
   - type: Command
     name: "Login to Container Registry"
@@ -44,17 +44,17 @@ steps:
     command: |
       echo "Logging into OCI Container Registry..."
       echo $OCI_RESOURCE_PRINCIPAL_REGION
-      docker login ${OCI_RESOURCE_PRINCIPAL_REGION}.ocir.io --username ${OCI_NAMESPACE}/oracleidentitycloudservice/${USER_NAME} --password-stdin <<< "${OCI_RESOURCE_PRINCIPAL_TOKEN}"
+      docker login ${OCI_RESOURCE_PRINCIPAL_REGION}.ocir.io --username ${tenancyName}/oracleidentitycloudservice/${USER_NAME} --password-stdin <<< "${OCI_RESOURCE_PRINCIPAL_TOKEN}"
 
   - type: Command
     name: "Push Docker Image"
     timeoutInSeconds: 1800
     command: |
       echo "Pushing Docker image to registry..."
-      docker push ${OCI_RESOURCE_PRINCIPAL_REGION}.ocir.io/${OCI_NAMESPACE}/${imageName}:${BUILDRUN_HASH}
-      docker push ${OCI_RESOURCE_PRINCIPAL_REGION}.ocir.io/${OCI_NAMESPACE}/${imageName}:latest
+      docker push ${DOCKER_REGISTRY}/${imageName}:${BUILDRUN_HASH}
+      docker push ${DOCKER_REGISTRY}/${imageName}:latest
 
 outputArtifacts:
   - name: livekit_agent_image
     type: DOCKER_IMAGE
-    location: ${OCI_RESOURCE_PRINCIPAL_REGION}.ocir.io/${OCI_NAMESPACE}/${imageName}:${BUILDRUN_HASH}
+    location: ${DOCKER_REGISTRY}/${imageName}:${BUILDRUN_HASH}
