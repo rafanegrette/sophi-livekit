@@ -15,11 +15,13 @@ steps:
     name: "Install Docker"
     timeoutInSeconds: 300
     command: |
-      echo "Installing Docker..."
+      echo "Installing Docker on Oracle Linux 7..."
       yum update -y
-      yum install -y docker
-      systemctl start docker
-      systemctl enable docker
+      yum install -y yum-utils device-mapper-persistent-data lvm2
+      yum-config-manager --add-repo https://download.docker.com/linux/centos/docker-ce.repo
+      yum install -y docker-ce docker-ce-cli containerd.io
+      service docker start
+      chkconfig docker on
       usermod -aG docker opc
 
   - type: Command
