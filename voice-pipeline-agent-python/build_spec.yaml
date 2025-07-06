@@ -22,7 +22,7 @@ steps:
       yum install -y docker-ce docker-ce-cli containerd.io
       service docker start
       chkconfig docker on
-      usermod -aG docker opc
+      echo "Docker installation completed"
 
   - type: Command
     name: "Build Docker Image"
