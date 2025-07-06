@@ -7,7 +7,7 @@ shell: bash
 env:
   variables:
     DOCKER_REGISTRY: "${REGISTRY_URL}"
-    IMAGE_NAME: "${IMAGE_NAME}"
+    IMAGE_NAME: "${imageName}"
     BUILDRUN_HASH: "${OCI_BUILD_RUN_ID}"
 
 steps:
@@ -33,6 +33,7 @@ steps:
       TENANCY_NAMESPACE=$(oci iam tenancy get --tenancy-id $(oci iam tenancy get --auth resource_principal --query 'data.id' --raw-output) --auth resource_principal --query 'data.name' --raw-output)
       echo "TENANCY_NAMESPACE=${TENANCY_NAMESPACE}" >> $GITHUB_ENV
       echo "Tenancy namespace: ${TENANCY_NAMESPACE}"
+      echo "Imaga name: ${imageName}"
 
   - type: Command
     name: "Build Docker Image"
