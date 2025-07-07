@@ -1,5 +1,5 @@
 import logging
-
+import os
 from dotenv import load_dotenv
 from livekit.agents import (
     AgentSession,
@@ -19,9 +19,12 @@ from livekit.plugins import (
 from agents.assistant import Assistant
 from services.instructions_service import InstructionsService
 
-load_dotenv(dotenv_path=".env.local")
-logger = logging.getLogger("voice-agent")
+if os.path.exists(".env.local"):
+    load_dotenv(dotenv_path=".env.local")
+else:
+    load_dotenv()
 
+logger = logging.getLogger("voice-agent")
 
 def prewarm(proc: JobProcess):
     proc.userdata["vad"] = silero.VAD.load()

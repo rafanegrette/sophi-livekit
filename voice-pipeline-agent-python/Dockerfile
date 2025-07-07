@@ -1,12 +1,18 @@
-FROM python:3.12.9-slim
+FROM python:3.12.9
+
+# Install CA certificates for SSL/TLS connections
+RUN apt-get update && apt-get install -y \
+    ca-certificates \
+    && update-ca-certificates \
+    && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /src
 COPY requirements.txt .
 RUN pip install -r requirements.txt
 
 COPY . .
-COPY .env.local .
 
-RUN python src/main.py download-files
+COPY entrypoint.sh .
+RUN chmod +x entrypoint.sh
 
-CMD ["python", "src/main.py", "start"]
+CMD ["./entrypoint.sh"]
