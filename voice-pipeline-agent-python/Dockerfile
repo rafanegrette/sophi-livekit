@@ -1,11 +1,10 @@
 FROM python:3.12.9
 
 # Install CA certificates for SSL/TLS connections
-RUN dnf update -y && dnf install -y \
+RUN apt-get update && apt-get install -y \
     ca-certificates \
     && update-ca-certificates \
-    && dnf clean all
-
+    && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /src
 COPY requirements.txt .
