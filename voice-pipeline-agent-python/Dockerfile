@@ -1,10 +1,10 @@
 FROM python:3.12.9
 
 # Install CA certificates for SSL/TLS connections
-RUN apt-get update && apt-get install -y \
+RUN yum update -y && yum install -y \
     ca-certificates \
     && update-ca-certificates \
-    && rm -rf /var/lib/apt/lists/*
+    && yum clean all
 
 WORKDIR /src
 COPY requirements.txt .
