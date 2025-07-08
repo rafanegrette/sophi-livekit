@@ -3,10 +3,10 @@ FROM python:3.12.9
 ENV GCRYPT_DISABLE_FIPS=1
 
 # Install CA certificates for SSL/TLS connections
-RUN apt-get update && apt-get install -y \
-    ca-certificates \
-    && update-ca-certificates \
-    && rm -rf /var/lib/apt/lists/*
+RUN apt-get update
+RUN apt-get install -y ca-certificates 
+RUN update-ca-certificates 
+RUN rm -rf /var/lib/apt/lists/*
 
 WORKDIR /src
 COPY requirements.txt .
