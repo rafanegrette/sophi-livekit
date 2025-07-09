@@ -33,3 +33,7 @@ variable "github_access_token" {
   description = "GitHub Personal Access Token for repository access"
   sensitive   = true
 }
+
+data "oci_identity_tenancy" "current_tenancy" {
+    tenancy_id = var.tenancy_ocid
+}

@@ -10,8 +10,23 @@ resource "oci_devops_project" "livekit_devops_project" {
     freeform_tags = {
         "Environment" = "development"
         "Project"     = "livekit"
+        "OCI_RESOURCE_PRINCIPAL_VERSION" = "2.2"
+
     }
 }
+
+# Create log group for DevOps
+resource "oci_logging_log_group" "devops_log_group" {
+    compartment_id = oci_identity_compartment.tf-compartment.id
+    display_name   = "livekit-devops-log-group"
+    description    = "Log group for LiveKit DevOps project"
+    
+    freeform_tags = {
+        "Environment" = "development"
+        "Project"     = "livekit"
+    }
+}
+
 
 # Notification topic for DevOps events
 resource "oci_ons_notification_topic" "devops_notifications" {
@@ -28,14 +43,19 @@ resource "oci_devops_build_pipeline" "livekit_build_pipeline" {
     
     build_pipeline_parameters {
         items {
-            name            = "REGISTRY_URL"
+            name            = "registryUrl"
             default_value   = "${var.region}.ocir.io"
             description     = "Container registry URL"
         }
         items {
-            name            = "IMAGE_NAME"
+            name            = "imageName"
             default_value   = "livekit-agent"
             description     = "Container image name"
+        }
+        items {
+            name            = "tenancyName"
+            default_value   = data.oci_identity_tenancy.current_tenancy.name
+            description     = "OCI Tenancy name"
         }
     }
 
@@ -294,6 +314,32 @@ resource "oci_devops_build_pipeline_stage" "trigger_deployment_stage" {
     # Direct configuration for triggering deployment pipeline
     deploy_pipeline_id = oci_devops_deploy_pipeline.livekit_deploy_pipeline.id
     is_pass_all_parameters_enabled = true
+
+    freeform_tags = {
+        "Environment" = "development"
+        "Project"     = "livekit"
+    }
+}
+
+# Create log for DevOps builds
+resource "oci_logging_log" "devops_build_log" {
+    display_name       = "livekit-devops-build-log"
+    log_group_id       = oci_logging_log_group.devops_log_group.id
+    log_type           = "SERVICE"
+    
+    configuration {
+        source {
+            category    = "all"
+            resource    = oci_devops_project.livekit_devops_project.id
+            service     = "devops"
+            source_type = "OCISERVICE"
+        }
+        
+        compartment_id = oci_identity_compartment.tf-compartment.id
+    }
+    
+    is_enabled         = true
+    retention_duration = 30
     
     freeform_tags = {
         "Environment" = "development"
