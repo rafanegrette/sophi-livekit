@@ -46,7 +46,7 @@ steps:
       echo $OCI_RESOURCE_PRINCIPAL_REGION
       echo $USER_NAME
       echo ${USER_NAME}
-      echo "${OCI_RESOURCE_PRINCIPAL_TOKEN}" | docker login ${OCI_RESOURCE_PRINCIPAL_REGION}.ocir.io --username ${tenancyName}/oracleidentitycloudservice/${USER_NAME} --password-stdin
+      printf '%s\n' "${OCI_RESOURCE_PRINCIPAL_TOKEN}" | docker login ${OCI_RESOURCE_PRINCIPAL_REGION}.ocir.io --username ${tenancyName}/oracleidentitycloudservice/${USER_NAME} --password-stdin
 
   - type: Command
     name: "Push Docker Image"
