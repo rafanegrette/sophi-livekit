@@ -1,4 +1,4 @@
-FROM python:3.12.9
+FROM python:3.13.5
 
 ENV GCRYPT_DISABLE_FIPS=1
 ENV LIBGCRYPT_FORCE_FIPS_MODE=0
@@ -10,7 +10,7 @@ RUN GCRYPT_DISABLE_FIPS=1 LIBGCRYPT_FORCE_FIPS_MODE=0 apt-get update && \
     update-ca-certificates && \
     rm -rf /var/lib/apt/lists/*
 
-    
+
 WORKDIR /src
 COPY requirements.txt .
 RUN pip install -r requirements.txt
