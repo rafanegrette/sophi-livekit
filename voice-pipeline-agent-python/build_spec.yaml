@@ -36,6 +36,15 @@ steps:
       
       # Build images
       docker build -t ${OCI_RESOURCE_PRINCIPAL_REGION}.ocir.io/${tenancyName}/${imageName}:${OCI_BUILD_RUN_ID} .
+      docker build -t ${OCI_RESOURCE_PRINCIPAL_REGION}.ocir.io/${tenancyName}/${imageName}:latest .
+
+  - type: Command
+    name: "Push Docker Image"
+    timeoutInSeconds: 1800
+    command: |
+      echo "Pushing Docker image to registry..."
+      docker push ${OCI_RESOURCE_PRINCIPAL_REGION}.ocir.io/${tenancyName}/${imageName}:${BUILDRUN_HASH}
+      docker push ${OCI_RESOURCE_PRINCIPAL_REGION}.ocir.io/${tenancyName}/${imageName}:latest
 
 outputArtifacts:
   - name: livekit_agent_image
