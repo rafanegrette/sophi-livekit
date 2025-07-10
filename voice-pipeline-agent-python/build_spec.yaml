@@ -35,9 +35,9 @@ steps:
       echo "Using tenancy namespace: ${tenancyNamespace}"
       
       # Build images
-      docker build -t ${OCI_RESOURCE_PRINCIPAL_REGION}.ocir.io/${tenancyNamespace}/${imageName}:${OCI_BUILD_RUN_ID} .
+      docker build -t ${OCI_RESOURCE_PRINCIPAL_REGION}.ocir.io/${tenancyNamespace}/${imageName}:latest .
 
 outputArtifacts:
   - name: livekit_agent_image
     type: DOCKER_IMAGE
-    location: ${OCI_RESOURCE_PRINCIPAL_REGION}.ocir.io/${tenancyNamespace}/${imageName}:${OCI_BUILD_RUN_ID}
+    location: ${OCI_RESOURCE_PRINCIPAL_REGION}.ocir.io/${tenancyNamespace}/${imageName}:latest
