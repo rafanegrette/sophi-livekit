@@ -40,78 +40,77 @@ steps:
       docker images | grep ${imageName}
 
 
-      - type: Command
-      name: "Pre-Login Authentication Check"
-      timeoutInSeconds: 60
-      command: |
-        set -x
-        echo "=== AUTHENTICATION PRE-CHECK ==="
+  - type: Command
+    name: "Pre-Login Authentication Check"
+    timeoutInSeconds: 60
+    command: |
+      set -x
+      echo "=== AUTHENTICATION PRE-CHECK ==="
         
-        # Check if we have the resource principal token
-        if [ -z "$OCI_RESOURCE_PRINCIPAL_TOKEN" ]; then
-          echo "ERROR: OCI_RESOURCE_PRINCIPAL_TOKEN is not available"
-          echo "This is required for container registry authentication"
-          exit 1
-        fi
-        
-        # Test OCI CLI authentication
-        echo "Testing OCI CLI authentication..."
-        oci --version
-        
-        # Try to get tenancy info to verify authentication
-        echo "Verifying resource principal authentication..."
-        oci iam tenancy get --tenancy-id ${tenancyName} --auth resource_principal || true
-        
-        echo "=== AUTHENTICATION PRE-CHECK COMPLETED ==="
+      # Check if we have the resource principal token
+      if [ -z "$OCI_RESOURCE_PRINCIPAL_TOKEN" ]; then
+        echo "ERROR: OCI_RESOURCE_PRINCIPAL_TOKEN is not available"
+        echo "This is required for container registry authentication"
+        exit 1
+      fi
+      
+      # Test OCI CLI authentication
+      echo "Testing OCI CLI authentication..."
+      oci --version
+      
+      # Try to get tenancy info to verify authentication
+      echo "Verifying resource principal authentication..."
+      oci iam tenancy get --tenancy-id ${tenancyName} --auth resource_principal || true
+      
+      echo "=== AUTHENTICATION PRE-CHECK COMPLETED ==="
   
   - type: Command
     name: "Docker Registry Login"
     timeoutInSeconds: 120
     command: |
-        set -x
-        echo "=== LOGGING INTO DOCKER REGISTRY ==="
+      set -x
+      echo "=== LOGGING INTO DOCKER REGISTRY ==="
+      echo "Registry URL: ${registryUrl}"
+      echo "Tenancy Namespace: ${tenancyNamespace}"
+      echo "Username: ${tenancyNamespace}/${userName}"
+      
+      # Try docker login with better error handling
+      echo "Attempting docker login..."
+      
+      # Use the resource principal token for authentication
+      echo "$OCI_RESOURCE_PRINCIPAL_TOKEN" | docker login \
+        --username "${tenancyNamespace}/${userName}" \
+        --password-stdin \
+        "${registryUrl}" 2>&1 | tee login.log
+      
+      LOGIN_EXIT_CODE=${PIPESTATUS[0]}
+      echo "Docker login exit code: $LOGIN_EXIT_CODE"
+      
+      if [ $LOGIN_EXIT_CODE -ne 0 ]; then
+        echo "=== DOCKER LOGIN FAILED ==="
+        echo "Login attempt log:"
+        cat login.log
+        echo "=== TROUBLESHOOTING INFO ==="
         echo "Registry URL: ${registryUrl}"
-        echo "Tenancy Namespace: ${tenancyNamespace}"
-        echo "Username: ${tenancyNamespace}/${userName}"
+        echo "Full username: ${tenancyNamespace}/${userName}"
+        echo "Tenancy namespace: ${tenancyNamespace}"
+        echo "Username: ${userName}"
         
-        # Try docker login with better error handling
-        echo "Attempting docker login..."
+        # Try alternative authentication method
+        echo "Trying alternative authentication..."
+        docker login -u "${tenancyNamespace}/${userName}" -p "$OCI_RESOURCE_PRINCIPAL_TOKEN" "${registryUrl}" 2>&1 | tee alt_login.log
+        ALT_LOGIN_EXIT_CODE=${PIPESTATUS[0]}
         
-        # Use the resource principal token for authentication
-        echo "$OCI_RESOURCE_PRINCIPAL_TOKEN" | docker login \
-          --username "${tenancyNamespace}/${userName}" \
-          --password-stdin \
-          "${registryUrl}" 2>&1 | tee login.log
-        
-        LOGIN_EXIT_CODE=${PIPESTATUS[0]}
-        echo "Docker login exit code: $LOGIN_EXIT_CODE"
-        
-        if [ $LOGIN_EXIT_CODE -ne 0 ]; then
-          echo "=== DOCKER LOGIN FAILED ==="
-          echo "Login attempt log:"
-          cat login.log
-          echo "=== TROUBLESHOOTING INFO ==="
-          echo "Registry URL: ${registryUrl}"
-          echo "Full username: ${tenancyNamespace}/${userName}"
-          echo "Tenancy namespace: ${tenancyNamespace}"
-          echo "Username: ${userName}"
-          
-          # Try alternative authentication method
-          echo "Trying alternative authentication..."
-          docker login -u "${tenancyNamespace}/${userName}" -p "$OCI_RESOURCE_PRINCIPAL_TOKEN" "${registryUrl}" 2>&1 | tee alt_login.log
-          ALT_LOGIN_EXIT_CODE=${PIPESTATUS[0]}
-          
-          if [ $ALT_LOGIN_EXIT_CODE -ne 0 ]; then
-            echo "Alternative login also failed"
-            cat alt_login.log
-            exit $LOGIN_EXIT_CODE
-          else
-            echo "Alternative login succeeded"
-          fi
+        if [ $ALT_LOGIN_EXIT_CODE -ne 0 ]; then
+          echo "Alternative login also failed"
+          cat alt_login.log
+          exit $LOGIN_EXIT_CODE
         else
-          echo "=== DOCKER LOGIN SUCCESSFUL ==="
+          echo "Alternative login succeeded"
         fi
-  
+      else
+        echo "=== DOCKER LOGIN SUCCESSFUL ==="
+      fi
 
   - type: Command
     name: "Docker Push"
