@@ -40,27 +40,6 @@ steps:
       docker images | grep ${imageName}
 
   - type: Command
-    name: "Authentication Check"
-    timeoutInSeconds: 60
-    command: |
-      set -x
-      echo "=== AUTHENTICATION CHECK ==="
-        
-      # Test OCI CLI authentication with resource principal
-      echo "Testing OCI CLI authentication..."
-      oci --version
-
-      # Verify resource principal authentication
-      echo "Verifying resource principal authentication..."
-      oci iam compartment list --auth resource_principal --compartment-id ${tenancyName} || {
-        echo "Resource principal authentication failed"
-        exit 1
-      }
-
-      echo "=== AUTHENTICATION CHECK COMPLETED ==="
-
-
-  - type: Command
     name: "Docker Registry Login"
     timeoutInSeconds: 120
     command: |
@@ -74,18 +53,9 @@ steps:
       echo "Generating auth token..."
       AUTH_TOKEN=$(oci iam auth-token create \
         --description "DevOps Build Token $(date +%Y%m%d-%H%M%S)" \
-        --user-id $(oci iam user list --auth resource_principal --query "data[?name=='${userName}'].id | [0]" --raw-output) \
-        --auth resource_principal \
+        --user-id $(oci iam user list --query "data[?name=='${userName}'].id | [0]" --raw-output) \
         --query 'data.token' \
         --raw-output)
-
-      if [ -z "$AUTH_TOKEN" ]; then
-        echo "Failed to generate auth token"
-        # Alternative: use existing auth token if available
-        echo "Trying with pre-configured auth token..."
-        # You should set this as a build parameter or use OCI Vault
-        AUTH_TOKEN="${authToken}"
-      fi
 
       # Docker login using the auth token
       echo "Attempting docker login..."
