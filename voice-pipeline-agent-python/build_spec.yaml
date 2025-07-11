@@ -122,24 +122,6 @@ steps:
       docker push ${registryUrl}/${tenancyNamespace}/${imageName}:latest
       echo "=== DOCKER PUSH COMPLETED ==="
 
-onFailure:
-  - type: Command
-    name: "Failure Debugging"
-    command: |
-      set -x
-      echo "=== BUILD FAILED - DEBUGGING INFO ==="
-      echo "Current directory: $(pwd)"
-      echo "Available files:"
-      find . -name "*.log" -exec echo "=== {} ===" \; -exec cat {} \;
-      echo "Docker processes:"
-      docker ps -a
-      echo "Docker images:"
-      docker images
-      echo "System resources:"
-      df -h
-      free -h
-      echo "=== END DEBUGGING INFO ==="
-
 outputArtifacts:
   - name: livekit_agent_image
     type: DOCKER_IMAGE
