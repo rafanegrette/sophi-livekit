@@ -35,9 +35,30 @@ steps:
       echo "Using tenancy namespace: ${tenancyNamespace}"
       
       # Build images
-      docker build -t ${OCI_RESOURCE_PRINCIPAL_REGION}.ocir.io/${tenancyNamespace}/${imageName}:latest .
+      docker build -t ${registryUrl}.ocir.io/${tenancyNamespace}/${imageName}:latest .
+      echo "=== DOCKER BUILD COMPLETED ==="
+      docker images | grep ${imageName}
 
+  - type: Command
+    name: "Docker Registry Login"
+    timeoutInSeconds: 120
+    command: |
+      set -x
+      echo "=== LOGGING INTO DOCKER REGISTRY ==="
+      echo "Registry URL: ${registryUrl}"
+      echo "Tenancy Namespace: ${tenancyNamespace}"
+      docker login -u ${tenancyNamespace}/${userName} -p $OCI_RESOURCE_PRINCIPAL_TOKEN ${registryUrl}
+
+  - type: Command
+      name: "Docker Push"
+      timeoutInSeconds: 1800
+      command: |
+        set -x
+        echo "=== PUSHING TO DOCKER REGISTRY ==="
+        docker push ${registryUrl}/${tenancyNamespace}/${imageName}:latest
+        echo "=== DOCKER PUSH COMPLETED ==="
+  
 outputArtifacts:
   - name: livekit_agent_image
     type: DOCKER_IMAGE
-    location: ${OCI_RESOURCE_PRINCIPAL_REGION}.ocir.io/${tenancyNamespace}/${imageName}:latest
+    location: ${registryUrl}.ocir.io/${tenancyNamespace}/${imageName}:latest
