@@ -1,5 +1,5 @@
 resource "oci_devops_project" "livekit_devops_project" {
-    compartment_id = oci_identity_compartment.tf-compartment.id
+    compartment_id = var.compartment_id
     name           = "livekit-devops-project"
     description    = "DevOps project for LiveKit agent application"
     
@@ -7,109 +7,92 @@ resource "oci_devops_project" "livekit_devops_project" {
         topic_id = oci_ons_notification_topic.devops_notifications.id
     }
 
-    freeform_tags = {
-        "Environment" = "development"
-        "Project"     = "livekit"
-        "OCI_RESOURCE_PRINCIPAL_VERSION" = "2.2"
-
-    }
+    freeform_tags = var.freeform_tags
 }
 
 # Create log group for DevOps
 resource "oci_logging_log_group" "devops_log_group" {
-    compartment_id = oci_identity_compartment.tf-compartment.id
-    display_name   = "livekit-devops-log-group"
+    compartment_id = var.compartment_id
+    display_name   = "${var.project_name}-log-group"
     description    = "Log group for LiveKit DevOps project"
     
-    freeform_tags = {
-        "Environment" = "development"
-        "Project"     = "livekit"
-    }
+    freeform_tags = var.freeform_tags
 }
 
 
 # Notification topic for DevOps events
 resource "oci_ons_notification_topic" "devops_notifications" {
-    compartment_id = oci_identity_compartment.tf-compartment.id
-    name           = "livekit-devops-notifications"
+    compartment_id = var.compartment_id
+    name           = "${var.project_name}-notifications"
     description    = "Notifications for LiveKit DevOps events"
 }
 
 # Build pipeline
 resource "oci_devops_build_pipeline" "livekit_build_pipeline" {
     project_id     = oci_devops_project.livekit_devops_project.id
-    display_name   = "livekit-build-pipeline"
-    description    = "Build pipeline for LiveKit agent application"
+    display_name   = "${var.project_name}-build-pipeline"
+    description    = "Build pipeline for ${var.project_name} application"
     
     build_pipeline_parameters {
         items {
             name            = "registryUrl"
-            default_value   = "${var.region}.ocir.io"
+            default_value   = var.build_pipeline_params.registry_url
             description     = "Container registry URL"
         }
         items {
             name            = "imageName"
-            default_value   = "livekit-agent"
+            default_value   = var.build_pipeline_params.image_name
             description     = "Container image name"
         }
         items {
             name            = "tenancyName"
-            default_value   = data.oci_identity_tenancy.current_tenancy.name
+            default_value   = var.build_pipeline_params.tenancy_name
             description     = "OCI Tenancy name"
         }
         items {
             name            = "userName"
-            default_value   = data.oci_identity_user.current_user.name
+            default_value   = var.build_pipeline_params.user_name
             description     = "Current OCI user name"
         }
         items {
             name            = "tenancyNamespace"
-            default_value   = data.oci_objectstorage_namespace.current_namespace.namespace
+            default_value   = var.build_pipeline_params.tenancy_namespace
             description     = "OCI Tenancy namespace for Object Storage and Container Registry"
         }
     }
 
-    freeform_tags = {
-        "Environment" = "development"
-        "Project"     = "livekit"
-    }
+    freeform_tags = var.freeform_tags
 }
 
 # External connection to GitHub
 resource "oci_devops_connection" "github_connection" {
     connection_type = "GITHUB_ACCESS_TOKEN"
     project_id      = oci_devops_project.livekit_devops_project.id
-    display_name    = "livekit-github-connection"
-    description     = "GitHub connection for LiveKit agent repository"
+    display_name    = "${var.project_name}-github-connection"
+    description     = "GitHub connection for ${var.project_name} agent repository"
     
-    username =  "rafanegrette"
-    access_token = oci_vault_secret.github_pat_secret.id
+    username =  var.github_config.username
+    access_token = var.github_config.access_token_secret_id
 
-    freeform_tags = {
-        "Environment" = "development"
-        "Project"     = "livekit"
-    }
+    freeform_tags = var.freeform_tags
 }
 
 # External repository reference
 resource "oci_devops_repository" "livekit_external_repo" {
-    name               = "livekit-agent-external"
+    name               = "${var.project_name}-external"
     project_id         = oci_devops_project.livekit_devops_project.id
     repository_type    = "MIRRORED"
-    description        = "External GitHub repository for LiveKit agent"
+    description        = "External GitHub repository for ${var.project_name}"
     
     mirror_repository_config {
         connector_id    = oci_devops_connection.github_connection.id
-        repository_url  = "https://github.com/rafanegrette/sophi-livekit"
+        repository_url  = var.github_config.repository_url
         trigger_schedule {
             schedule_type   = "DEFAULT"
         }
     }
 
-    freeform_tags = {
-        "Environment" = "development"
-        "Project"     = "livekit"
-    }
+    freeform_tags = var.freeform_tags
 }
 
 # Build stage (corrected - removed primary_build_source)
@@ -117,7 +100,7 @@ resource "oci_devops_build_pipeline_stage" "build_stage" {
     build_pipeline_id = oci_devops_build_pipeline.livekit_build_pipeline.id
     build_pipeline_stage_type = "BUILD"
     display_name = "Build Docker Image"
-    description = "Build Docker image from voice-pipeline-agent-python folder"
+    description = "Build Docker image from ${var.build_config.source_folder} folder"
     
     build_pipeline_stage_predecessor_collection {
         items {
@@ -129,21 +112,19 @@ resource "oci_devops_build_pipeline_stage" "build_stage" {
         items {
             connection_type = "DEVOPS_CODE_REPOSITORY"
             repository_id = oci_devops_repository.livekit_external_repo.id
-            name = "livekit_source"
-            repository_url = "https://github.com/rafanegrette/sophi-livekit.git"
-            branch = "main"
+            name = "${var.project_name}_source"
+            repository_url = var.github_config.repository_url
+            branch = var.github_config.branch
         }
     }
 
-    stage_execution_timeout_in_seconds = 3600
+    stage_execution_timeout_in_seconds = var.build_config.timeout_seconds
     
-    build_spec_file = "voice-pipeline-agent-python/build_spec.yaml"
-    image = "OL7_X86_64_STANDARD_10"
+    build_spec_file = var.build_config.build_spec_file
+
+    image = var.build_config.image
     
-    freeform_tags = {
-        "Environment" = "development"
-        "Project"     = "livekit"
-    }
+    freeform_tags = var.freeform_tags
 }
 
 
@@ -151,20 +132,17 @@ resource "oci_devops_build_pipeline_stage" "build_stage" {
 # Artifact for container image
 resource "oci_devops_deploy_artifact" "container_image_artifact" {
     project_id = oci_devops_project.livekit_devops_project.id
-    display_name = "livekit-agent-container-image"
+    display_name = "${var.project_name}-container-image"
     deploy_artifact_type = "DOCKER_IMAGE"
     argument_substitution_mode = "NONE"
 
     deploy_artifact_source {
         deploy_artifact_source_type = "OCIR"
-        image_uri = "${var.region}.ocir.io/${data.oci_artifacts_container_configuration.container_configuration.namespace}/${oci_artifacts_container_repository.livekit_repository.display_name}:latest"
-        repository_id = oci_artifacts_container_repository.livekit_repository.id
+        image_uri = var.container_registry.image_uri
+        repository_id = var.container_registry.repository_id
     }
     
-    freeform_tags = {
-        "Environment" = "development"
-        "Project"     = "livekit"
-    }
+    freeform_tags = var.freeform_tags
 }
 
 # Deliver artifacts stage
@@ -183,14 +161,11 @@ resource "oci_devops_build_pipeline_stage" "deliver_artifacts_stage" {
     deliver_artifact_collection {
         items {
             artifact_id = oci_devops_deploy_artifact.container_image_artifact.id
-            artifact_name = "livekit_agent_image"
+            artifact_name = "${var.project_name}_agent_image"
         }
     }
     
-    freeform_tags = {
-        "Environment" = "development"
-        "Project"     = "livekit"
-    }
+    freeform_tags = var.freeform_tags
 }
 
 # Trigger for automatic pipeline execution on push
@@ -209,55 +184,46 @@ resource "oci_devops_trigger" "github_push_trigger" {
             trigger_source = "DEVOPS_CODE_REPOSITORY"
             events = ["PUSH"]
             include {
-                head_ref = "refs/heads/main"
+                head_ref = "refs/heads/${var.github_config.branch}"
             }
         }
     }
     
-    freeform_tags = {
-        "Environment" = "development"
-        "Project"     = "livekit"
-    }
+    freeform_tags = var.freeform_tags
 }
 
 # Deployment pipeline
 resource "oci_devops_deploy_pipeline" "livekit_deploy_pipeline" {
     project_id     = oci_devops_project.livekit_devops_project.id
-    display_name   = "livekit-deploy-pipeline"
-    description    = "Deployment pipeline for LiveKit agent to OKE"
+    display_name   = "${var.project_name}-deploy-pipeline"
+    description    = "Deployment pipeline for ${var.project_name} agent to OKE"
 
     deploy_pipeline_parameters {
         items {
             name            = "NAMESPACE"
-            default_value   = "livekit"
+            default_value   = var.deploy_config.namespace
             description     = "Kubernetes namespace"
         }
         items {
             name            = "REPLICAS"
-            default_value   = "1"
+            default_value   = var.deploy_config.replicas
             description     = "Number of replicas"
         }
     }
 
-    freeform_tags = {
-        "Environment" = "development"
-        "Project"     = "livekit"
-    }
+    freeform_tags = var.freeform_tags
 }
 
 # OKE Environment for deployment
 resource "oci_devops_deploy_environment" "oke_environment" {
     deploy_environment_type = "OKE_CLUSTER"
     project_id              = oci_devops_project.livekit_devops_project.id
-    display_name            = "livekit-oke-environment"
-    description             = "OKE cluster environment for LiveKit deployment"
+    display_name            = "${var.project_name}-oke-environment"
+    description             = "OKE cluster environment for ${var.project_name} deployment"
     
-    cluster_id = oci_containerengine_cluster.oke-cluster.id
+    cluster_id = var.oke_cluster_id
 
-    freeform_tags = {
-        "Environment" = "development"
-        "Project"     = "livekit"
-    }
+    freeform_tags = var.freeform_tags
 }
 
 
@@ -270,14 +236,11 @@ resource "oci_devops_deploy_artifact" "kubernetes_manifest_artifact" {
     deploy_artifact_source {
         deploy_artifact_source_type = "GENERIC_ARTIFACT"
         repository_id = oci_devops_repository.livekit_external_repo.id
-        deploy_artifact_path = "voice-pipeline-agent-python/k8s-manifests"
+        deploy_artifact_path = var.deploy_config.manifest_path
         deploy_artifact_version = "latest"
     }
     
-    freeform_tags = {
-        "Environment" = "development"
-        "Project"     = "livekit"
-    }
+    freeform_tags = var.freeform_tags
 }
 
 # Deploy stage using Helm charts
@@ -285,7 +248,7 @@ resource "oci_devops_deploy_stage" "kubernetes_deploy_stage" {
     deploy_pipeline_id = oci_devops_deploy_pipeline.livekit_deploy_pipeline.id
     deploy_stage_type = "OKE_DEPLOYMENT"
     display_name = "Deploy to OKE using Kubernetes Manifests"
-    description = "Deploy LiveKit agent to OKE cluster using Kubernetes manifests"
+    description = "Deploy ${var.project_name} agent to OKE cluster using Kubernetes manifests"
     
     deploy_stage_predecessor_collection {
         items {
@@ -304,10 +267,7 @@ resource "oci_devops_deploy_stage" "kubernetes_deploy_stage" {
         policy_type = "AUTOMATED_STAGE_ROLLBACK_POLICY"
     }
     
-    freeform_tags = {
-        "Environment" = "development"
-        "Project"     = "livekit"
-    }
+    freeform_tags = var.freeform_tags
 }
 
 # Connect build pipeline to deploy pipeline
@@ -327,15 +287,12 @@ resource "oci_devops_build_pipeline_stage" "trigger_deployment_stage" {
     deploy_pipeline_id = oci_devops_deploy_pipeline.livekit_deploy_pipeline.id
     is_pass_all_parameters_enabled = true
 
-    freeform_tags = {
-        "Environment" = "development"
-        "Project"     = "livekit"
-    }
+    freeform_tags = var.freeform_tags
 }
 
 # Create log for DevOps builds
 resource "oci_logging_log" "devops_build_log" {
-    display_name       = "livekit-devops-build-log"
+    display_name       = "${var.project_name}-build-log"
     log_group_id       = oci_logging_log_group.devops_log_group.id
     log_type           = "SERVICE"
     
@@ -347,15 +304,12 @@ resource "oci_logging_log" "devops_build_log" {
             source_type = "OCISERVICE"
         }
         
-        compartment_id = oci_identity_compartment.tf-compartment.id
+        compartment_id = var.compartment_id
     }
     
     is_enabled         = true
-    retention_duration = 90
+    retention_duration = var.log_retention_days
     
-    freeform_tags = {
-        "Environment" = "development"
-        "Project"     = "livekit"
-    }
+    freeform_tags = var.freeform_tags
 }
 
