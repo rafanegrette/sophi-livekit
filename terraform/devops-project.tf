@@ -57,6 +57,16 @@ resource "oci_devops_build_pipeline" "livekit_build_pipeline" {
             default_value   = data.oci_identity_tenancy.current_tenancy.name
             description     = "OCI Tenancy name"
         }
+        items {
+            name            = "userName"
+            default_value   = data.oci_identity_user.current_user.name
+            description     = "Current OCI user name"
+        }
+        items {
+            name            = "tenancyNamespace"
+            default_value   = data.oci_objectstorage_namespace.current_namespace.namespace
+            description     = "OCI Tenancy namespace for Object Storage and Container Registry"
+        }
     }
 
     freeform_tags = {
@@ -124,6 +134,8 @@ resource "oci_devops_build_pipeline_stage" "build_stage" {
             branch = "main"
         }
     }
+
+    stage_execution_timeout_in_seconds = 3600
     
     build_spec_file = "voice-pipeline-agent-python/build_spec.yaml"
     image = "OL7_X86_64_STANDARD_10"
@@ -145,7 +157,7 @@ resource "oci_devops_deploy_artifact" "container_image_artifact" {
 
     deploy_artifact_source {
         deploy_artifact_source_type = "OCIR"
-        image_uri = "${var.region}.ocir.io/${data.oci_artifacts_container_configuration.container_configuration.namespace}/${oci_artifacts_container_repository.livekit_repository.display_name}:$${BUILDRUN_HASH}"
+        image_uri = "${var.region}.ocir.io/${data.oci_artifacts_container_configuration.container_configuration.namespace}/${oci_artifacts_container_repository.livekit_repository.display_name}:latest"
         repository_id = oci_artifacts_container_repository.livekit_repository.id
     }
     
@@ -339,10 +351,11 @@ resource "oci_logging_log" "devops_build_log" {
     }
     
     is_enabled         = true
-    retention_duration = 30
+    retention_duration = 90
     
     freeform_tags = {
         "Environment" = "development"
         "Project"     = "livekit"
     }
 }
+

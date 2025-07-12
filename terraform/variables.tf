@@ -37,3 +37,11 @@ variable "github_access_token" {
 data "oci_identity_tenancy" "current_tenancy" {
     tenancy_id = var.tenancy_ocid
 }
+
+data "oci_identity_user" "current_user" {
+    user_id = var.user_ocid
+}
+
+data "oci_objectstorage_namespace" "current_namespace" {
+    compartment_id = oci_identity_compartment.tf-compartment.id
+}
