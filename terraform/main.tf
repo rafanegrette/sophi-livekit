@@ -24,15 +24,36 @@ module "devops" {
   }
   
   container_registry = {
-    image_uri     = "${var.region}.ocir.io/${data.oci_artifacts_container_configuration.container_configuration.namespace}/${oci_artifacts_container_repository.livekit_repository.display_name}:latest"
-    repository_id = oci_artifacts_container_repository.livekit_repository.id
+    image_uri     = "${var.region}.ocir.io/${module.oke_cluster.container_registry_url}/${module.oke_cluster.container_repository_name}:latest"
+    repository_id = module.oke_cluster.container_repository_id
   }
   
-  oke_cluster_id = oci_containerengine_cluster.oke-cluster.id
+  oke_cluster_id = module.oke_cluster.cluster_id
   
   freeform_tags = {
     "Environment" = "development"
     "Project"     = "livekit"
     "OCI_RESOURCE_PRINCIPAL_VERSION" = "2.2"
   }
+}
+
+
+module "oke_cluster" {
+  source = "./oke-cluster"
+  
+  # General
+  compartment_id = oci_identity_compartment.tf-compartment.id
+  
+  # Cluster configuration
+  kubernetes_version = "v1.33.1"
+  cluster_name       = "livekit-agent-cluster"
+  vcn_id            = module.vcn.vcn_id
+  
+  # Network configuration
+  service_lb_subnet_ids = [oci_core_subnet.vcn-public-subnet.id]
+  
+  # Node pool configuration
+  availability_domain = data.oci_identity_availability_domains.ads.availability_domains[0].name
+  private_subnet_id   = oci_core_subnet.vcn-private-subnet.id
+  node_image_id       = "ocid1.image.oc1.phx.aaaaaaaaxe2ivqoxeo4c3bgkeutfpod4oklzxmkrxgirgwgft2swftwcni2a"
 }

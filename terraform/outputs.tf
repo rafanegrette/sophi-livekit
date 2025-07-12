@@ -55,70 +55,24 @@ output "private-security-list-OCID" {
   value = oci_core_security_list.private-security-list.id
 }
 
-## k8s cluster
-
+# OKE Cluster outputs (via module)
 output "cluster-name" {
-  value = oci_containerengine_cluster.oke-cluster.name
+  value = module.oke_cluster.cluster_name
 }
 
 output "cluster-OCID" {
-  value = oci_containerengine_cluster.oke-cluster.id
+  value = module.oke_cluster.cluster_id
 }
-
-output "cluster-kubernetes-version" {
-  value = oci_containerengine_cluster.oke-cluster.kubernetes_version
-}
-
-output "cluster-state" {
-  value = oci_containerengine_cluster.oke-cluster.state
-}
-
-output "node-pool-name" {
-  value = oci_containerengine_node_pool.oke-node-pool.name
-}
-
-output "node-pool-OCID" {
-  value = oci_containerengine_node_pool.oke-node-pool.id
-}
-
-output "node-pool-kubernetes-version" {
-  value = oci_containerengine_node_pool.oke-node-pool.node_config_details[0].size
-}
-
-output "node-shape" {
-  value = oci_containerengine_node_pool.oke-node-pool.node_shape
-}
-
-
-
-
-# Data source to get current region
-
 
 output "artifact_registry_repository_name" {
     description = "Name of the artifact registry repository"
-    value       = oci_artifacts_container_repository.livekit_repository.display_name
-}
-
-output "artifact_registry_repository_ocid" {
-    description = "OCID of the artifact registry repository"
-    value       = oci_artifacts_container_repository.livekit_repository.id
-}
-
-output "artifact_registry_namespace" {
-    description = "Artifact registry namespace"
-    value       = data.oci_artifacts_container_configuration.container_configuration.namespace
+    value       = module.oke_cluster.container_repository_name
 }
 
 output "container_registry_url" {
     description = "Container registry URL for pushing/pulling images"
-    value       = "${var.region}.ocir.io/${data.oci_artifacts_container_configuration.container_configuration.namespace}/${oci_artifacts_container_repository.livekit_repository.display_name}"
+    value       = "${var.region}.ocir.io/${module.oke_cluster.container_registry_url}/${module.oke_cluster.container_repository_name}"
     sensitive   = true
-}
-
-output "container_registry_path" {
-    description = "Container registry path (without region prefix)"
-    value       = "${data.oci_artifacts_container_configuration.container_configuration.namespace}/${oci_artifacts_container_repository.livekit_repository.display_name}"
 }
 
 output "dynamic_group_instances_ocid" {
