@@ -37,6 +37,37 @@ module "devops" {
   }
 }
 
+# Replace the existing VCN module and individual resources with:
+module "network" {
+  source = "./network"
+  
+  compartment_id = oci_identity_compartment.tf-compartment.id
+  
+  # VCN configuration
+  vcn_name      = "livekit-vcn"
+  vcn_cidrs     = ["10.0.0.0/16"]
+  vcn_dns_label = "livekitvcn"
+  
+  # Gateway configuration
+  create_internet_gateway = true
+  create_nat_gateway     = true
+  create_service_gateway = true
+  
+  # Security list names
+  public_security_list_name  = "security-list-for-public-subnet"
+  private_security_list_name = "security-list-for-private-subnet"
+  
+  # Subnet configuration
+  public_subnet_name   = "public-subnet"
+  public_subnet_cidr   = "10.0.0.0/24"
+  private_subnet_name  = "private-livekit-subnet"
+  private_subnet_cidr  = "10.0.1.0/24"
+  
+  freeform_tags = {
+    "Environment" = "development"
+    "Project"     = "livekit"
+  }
+}
 
 module "oke_cluster" {
   source = "./oke-cluster"
@@ -47,13 +78,13 @@ module "oke_cluster" {
   # Cluster configuration
   kubernetes_version = "v1.33.1"
   cluster_name       = "livekit-agent-cluster"
-  vcn_id            = module.vcn.vcn_id
+  vcn_id            = module.network.vcn_id
   
   # Network configuration
-  service_lb_subnet_ids = [oci_core_subnet.vcn-public-subnet.id]
+  service_lb_subnet_ids = [module.network.public_subnet_id]
   
   # Node pool configuration
   availability_domain = data.oci_identity_availability_domains.ads.availability_domains[0].name
-  private_subnet_id   = oci_core_subnet.vcn-private-subnet.id
+  private_subnet_id   = module.network.private_subnet_id
   node_image_id       = "ocid1.image.oc1.phx.aaaaaaaaxe2ivqoxeo4c3bgkeutfpod4oklzxmkrxgirgwgft2swftwcni2a"
 }

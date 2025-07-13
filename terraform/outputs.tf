@@ -15,44 +15,47 @@ output "name-of-first-availability-domain" {
 }
 
 output "vcn_id" {
-    description = "OCID of the VCN created"
-    value = module.vcn.vcn_id
+  description = "OCID of the VCN created"
+  value       = module.network.vcn_id
 }
 
 output "id-for-route-table-that-includes-the-internet-gateway" {
-  description = "OCID of the internet-route table. This route table has an internet gateway to be used for public subnets"
-  value = module.vcn.ig_route_id
+  description = "OCID of the internet-route table"
+  value       = module.network.ig_route_id
 }
+
 output "nat-gateway-id" {
   description = "OCID for NAT gateway"
-  value = module.vcn.nat_gateway_id
+  value       = module.network.nat_gateway_id
 }
+
 output "id-for-for-route-table-that-includes-the-nat-gateway" {
-  description = "OCID of the nat-route table - This route table has a nat gateway to be used for private subnets. This route table also has a service gateway."
-  value = module.vcn.nat_route_id
+  description = "OCID of the nat-route table"
+  value       = module.network.nat_route_id
 }
 
 output "public-subnet-name" {
-  value = oci_core_subnet.vcn-public-subnet.display_name
+  value = module.network.public_subnet_name
 }
 
 output "public-subnet-OCID" {
-  value = oci_core_subnet.vcn-public-subnet.id
+  value = module.network.public_subnet_id
 }
 
 output "public-security-list-name" {
-  value  = oci_core_security_list.public-security-list.display_name  
+  value = module.network.public_security_list_name
 }
 
 output "public-security-list-OCID" {
-  value = oci_core_security_list.public-security-list.id
+  value = module.network.public_security_list_id
 }
 
 output "private-security-list-name" {
-  value = oci_core_security_list.private-security-list.display_name
+  value = module.network.private_security_list_name
 }
+
 output "private-security-list-OCID" {
-  value = oci_core_security_list.private-security-list.id
+  value = module.network.private_security_list_id
 }
 
 # OKE Cluster outputs (via module)
