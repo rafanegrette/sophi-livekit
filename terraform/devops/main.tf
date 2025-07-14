@@ -209,6 +209,52 @@ resource "oci_devops_deploy_pipeline" "livekit_deploy_pipeline" {
             default_value   = var.deploy_config.replicas
             description     = "Number of replicas"
         }
+        # Add environment variables from app_secrets
+        items {
+            name            = "LIVEKIT_KEY"
+            default_value   = var.app_secrets.livekit_key
+            description     = "LiveKit API Key"
+        }
+        items {
+            name            = "LIVEKIT_SECRET"
+            default_value   = var.app_secrets.livekit_secret
+            description     = "LiveKit API Secret"
+        }
+        items {
+            name            = "LIVEKIT_URL"
+            default_value   = var.app_secrets.livekit_url
+            description     = "LiveKit WebSocket URL"
+        }
+        items {
+            name            = "CARTESIA_API_KEY"
+            default_value   = var.app_secrets.cartesia_api_key
+            description     = "Cartesia API Key"
+        }
+        items {
+            name            = "DEEPGRAM_API_KEY"
+            default_value   = var.app_secrets.deepgram_api_key
+            description     = "Deepgram API Key"
+        }
+        items {
+            name            = "OPENAI_API_KEY"
+            default_value   = var.app_secrets.openai_api_key
+            description     = "OpenAI API Key"
+        }
+        items {
+            name            = "DEEPSEEK_API_KEY"
+            default_value   = var.app_secrets.deepseek_api_key
+            description     = "Deepseek API Key"
+        }
+        items {
+            name            = "CONTAINER_REGISTRY_URL"
+            default_value   = "${var.build_pipeline_params.registry_url}/${var.build_pipeline_params.tenancy_namespace}/${var.build_pipeline_params.image_name}"
+            description     = "Container registry URL"
+        }
+        items {
+            name            = "BUILD_TAG"
+            default_value   = "latest"
+            description     = "Build tag for the container image"
+        }
     }
 
     freeform_tags = var.freeform_tags

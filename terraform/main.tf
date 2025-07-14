@@ -27,9 +27,11 @@ module "devops" {
     image_uri     = "${var.region}.ocir.io/${module.oke_cluster.container_registry_url}/${module.oke_cluster.container_repository_name}:latest"
     repository_id = module.oke_cluster.container_repository_id
   }
+
+  app_secrets = var.app_secrets
   
   oke_cluster_id = module.oke_cluster.cluster_id
-  
+
   freeform_tags = {
     "Environment" = "development"
     "Project"     = "livekit"
@@ -87,4 +89,8 @@ module "oke_cluster" {
   availability_domain = data.oci_identity_availability_domains.ads.availability_domains[0].name
   private_subnet_id   = module.network.private_subnet_id
   node_image_id       = "ocid1.image.oc1.phx.aaaaaaaaxe2ivqoxeo4c3bgkeutfpod4oklzxmkrxgirgwgft2swftwcni2a"
+
+  app_namespace = "livekit"
+  
+  region = var.region
 }

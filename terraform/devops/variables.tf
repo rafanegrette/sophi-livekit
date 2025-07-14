@@ -104,3 +104,17 @@ variable "log_retention_days" {
   type        = number
   default     = 90
 }
+
+variable "app_secrets" {
+  description = "Application secrets for deployment"
+  type = object({
+    livekit_key        = string
+    livekit_secret     = string
+    livekit_url        = string
+    cartesia_api_key   = string
+    deepgram_api_key   = string
+    openai_api_key = string
+    deepseek_api_key = string
+  })
+  sensitive = true
+}

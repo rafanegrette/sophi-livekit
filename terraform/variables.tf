@@ -45,3 +45,17 @@ data "oci_identity_user" "current_user" {
 data "oci_objectstorage_namespace" "current_namespace" {
     compartment_id = oci_identity_compartment.tf-compartment.id
 }
+
+
+variable "app_secrets" {
+  description = "Applications secrets"
+  type = object({
+    livekit_key = string
+    livekit_secret = string
+    livekit_url = string
+    cartesia_api_key = string
+    deepgram_api_key = string
+    openai_api_key = string
+    deepseek_api_key = string
+  })
+}

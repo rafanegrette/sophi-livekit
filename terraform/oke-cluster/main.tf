@@ -71,3 +71,34 @@ resource "oci_artifacts_container_repository" "livekit_repository" {
 data "oci_artifacts_container_configuration" "container_configuration" {
     compartment_id = var.compartment_id
 }
+
+# Kubernetes provider configuration
+data "oci_containerengine_cluster_kube_config" "cluster_kube_config" {
+  cluster_id = oci_containerengine_cluster.oke-cluster.id
+  expiration = 2592000
+}
+
+provider "kubernetes" {
+  host                   = yamldecode(data.oci_containerengine_cluster_kube_config.cluster_kube_config.content)["clusters"][0]["cluster"]["server"]
+  cluster_ca_certificate = base64decode(yamldecode(data.oci_containerengine_cluster_kube_config.cluster_kube_config.content)["clusters"][0]["cluster"]["certificate-authority-data"])
+  exec {
+    api_version = "client.authentication.k8s.io/v1beta1"
+    command     = "oci"
+    args = [
+      "ce",
+      "cluster",
+      "generate-token",
+      "--cluster-id",
+      oci_containerengine_cluster.oke-cluster.id
+    ]
+  }
+}
+
+# Create namespace
+resource "kubernetes_namespace" "app_namespace" {
+  metadata {
+    name = var.app_namespace
+  }
+  
+  depends_on = [oci_containerengine_node_pool.oke-node-pool]
+}

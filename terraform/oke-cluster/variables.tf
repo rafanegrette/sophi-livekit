@@ -145,3 +145,41 @@ variable "repository_readme_format" {
   type        = string
   default     = "text/plain"
 }
+
+variable "app_namespace" {
+  description = "Name of the Kubernetes namespace"
+  type        = string
+  default     = "livekit"
+}
+
+
+variable "app_config" {
+  description = "Non-sensitive application configuration"
+  type = object({
+    app_env   = string
+    log_level = string
+    app_port  = string
+  })
+  default = {
+    app_env   = "production"
+    log_level = "info"
+    app_port  = "8080"
+  }
+}
+
+variable "app_config_name" {
+  description = "Name of the Kubernetes config map"
+  type        = string
+  default     = "app-config"
+}
+
+variable "app_secrets_name" {
+  description = "Name of the Kubernetes secret"
+  type        = string
+  default     = "app-secrets"
+}
+
+variable "region" {
+  description = "The OCI region"
+  type        = string
+}
