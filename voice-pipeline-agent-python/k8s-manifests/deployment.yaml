@@ -5,7 +5,6 @@ metadata:
   namespace: ${NAMESPACE}
   labels:
     app: livekit-agent
-    version: "1.0.0"
 spec:
   replicas: ${REPLICAS}
   selector:
@@ -18,70 +17,31 @@ spec:
     spec:
       containers:
       - name: livekit-agent
-        image: ${DOCKER_REGISTRY}/${IMAGE_NAME}:${IMAGE_TAG}
+        image: ${CONTAINER_REGISTRY_URL}/livekit-agent:${BUILD_TAG}
+        env:
+        - name: LIVEKIT_API_KEY
+          value: "${LIVEKIT_KEY}"
+        - name: LIVEKIT_API_SECRET
+          value: "${LIVEKIT_SECRET}"
+        - name: LIVEKIT_URL
+          value: "${LIVEKIT_URL}"
+        - name: CARTESIA_API_KEY
+          value: "${CARTESIA_API_KEY}"
+        - name: DEEPGRAM_API_KEY
+          value: "${DEEPGRAM_API_KEY}"
+        - name: OPENAI_API_KEY
+          value: "${OPENAI_API_KEY}"
+        - name: DEEPSEEK_API_KEY
+          value: "${DEEPSEEK_API_KEY}"                    
         ports:
         - containerPort: 8080
-          name: http
-        env:
-        # Secrets as environment variables
-        - name: LIVEKIT_KEY
-          valueFrom:
-            secretKeyRef:
-              name: livekit-app-secrets
-              key: livekit-key
-        - name: LIVEKIT_SECRET
-          valueFrom:
-            secretKeyRef:
-              name: livekit-app-secrets
-              key: livekit-secret
-        - name: LIVEKIT_URL
-          valueFrom:
-            secretKeyRef:
-              name: livekit-app-secrets
-              key: livekit-url
-        - name: CARTESIA_API_KEY
-          valueFrom:
-            secretKeyRef:
-              name: livekit-app-secrets
-              key: cartesia-api-key
-        - name: DEEPGRAM_API_KEY
-          valueFrom:
-            secretKeyRef:
-              name: livekit-app-secrets
-              key: deepgram-api-key
-        - name: OPENAI_API_KEY
-          valueFrom:
-            secretKeyRef:
-              name: livekit-app-secrets
-              key: openai-api-key
-        - name: DEEPSEEK_API_KEY
-          valueFrom:
-            secretKeyRef:
-              name: livekit-app-secrets
-              key: deepseek-api-key
-        # ConfigMap as environment variables
-        - name: APP_ENV
-          valueFrom:
-            configMapKeyRef:
-              name: livekit-app-config
-              key: app-env
-        - name: LOG_LEVEL
-          valueFrom:
-            configMapKeyRef:
-              name: livekit-app-config
-              key: log-level
-        - name: APP_PORT
-          valueFrom:
-            configMapKeyRef:
-              name: livekit-app-config
-              key: app-port
         resources:
-          limits:
-            cpu: 500m
-            memory: 512Mi
           requests:
-            cpu: 250m
-            memory: 256Mi
+            memory: "256Mi"
+            cpu: "250m"
+          limits:
+            memory: "512Mi"
+            cpu: "500m"
         livenessProbe:
           httpGet:
             path: /health
@@ -94,5 +54,3 @@ spec:
             port: 8080
           initialDelaySeconds: 5
           periodSeconds: 5
-      imagePullSecrets:
-      - name: ocir-secret
