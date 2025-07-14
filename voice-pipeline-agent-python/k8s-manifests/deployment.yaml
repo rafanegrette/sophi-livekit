@@ -17,7 +17,7 @@ spec:
     spec:
       containers:
       - name: livekit-agent
-        image: ${CONTAINER_REGISTRY_URL}/livekit-agent:${BUILD_TAG}
+        image: ${CONTAINER_REGISTRY_URL}:${BUILD_TAG}
         env:
         - name: LIVEKIT_API_KEY
           value: "${LIVEKIT_KEY}"
