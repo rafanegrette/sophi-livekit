@@ -3,6 +3,9 @@ kind: Deployment
 metadata:
   name: livekit-agent
   namespace: ${NAMESPACE}
+  labels:
+    app: livekit-agent
+    version: "1.0.0"
 spec:
   replicas: ${REPLICAS}
   selector:
@@ -15,6 +18,81 @@ spec:
     spec:
       containers:
       - name: livekit-agent
-        image: ${var.region}.ocir.io/${data.oci_artifacts_container_configuration.container_configuration.namespace}/${oci_artifacts_container_repository.livekit_repository.display_name}:${BUILDRUN_HASH}
+        image: ${DOCKER_REGISTRY}/${IMAGE_NAME}:${IMAGE_TAG}
         ports:
         - containerPort: 8080
+          name: http
+        env:
+        # Secrets as environment variables
+        - name: LIVEKIT_KEY
+          valueFrom:
+            secretKeyRef:
+              name: livekit-app-secrets
+              key: livekit-key
+        - name: LIVEKIT_SECRET
+          valueFrom:
+            secretKeyRef:
+              name: livekit-app-secrets
+              key: livekit-secret
+        - name: LIVEKIT_URL
+          valueFrom:
+            secretKeyRef:
+              name: livekit-app-secrets
+              key: livekit-url
+        - name: CARTESIA_API_KEY
+          valueFrom:
+            secretKeyRef:
+              name: livekit-app-secrets
+              key: cartesia-api-key
+        - name: DEEPGRAM_API_KEY
+          valueFrom:
+            secretKeyRef:
+              name: livekit-app-secrets
+              key: deepgram-api-key
+        - name: OPENAI_API_KEY
+          valueFrom:
+            secretKeyRef:
+              name: livekit-app-secrets
+              key: openai-api-key
+        - name: DEEPSEEK_API_KEY
+          valueFrom:
+            secretKeyRef:
+              name: livekit-app-secrets
+              key: deepseek-api-key
+        # ConfigMap as environment variables
+        - name: APP_ENV
+          valueFrom:
+            configMapKeyRef:
+              name: livekit-app-config
+              key: app-env
+        - name: LOG_LEVEL
+          valueFrom:
+            configMapKeyRef:
+              name: livekit-app-config
+              key: log-level
+        - name: APP_PORT
+          valueFrom:
+            configMapKeyRef:
+              name: livekit-app-config
+              key: app-port
+        resources:
+          limits:
+            cpu: 500m
+            memory: 512Mi
+          requests:
+            cpu: 250m
+            memory: 256Mi
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: 8080
+          initialDelaySeconds: 30
+          periodSeconds: 10
+        readinessProbe:
+          httpGet:
+            path: /ready
+            port: 8080
+          initialDelaySeconds: 5
+          periodSeconds: 5
+      imagePullSecrets:
+      - name: ocir-secret
