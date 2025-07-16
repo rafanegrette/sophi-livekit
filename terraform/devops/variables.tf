@@ -67,7 +67,7 @@ variable "build_config" {
   default = {
     source_folder   = "voice-pipeline-agent-python"
     timeout_seconds = 3600
-    build_spec_file = "voice-pipeline-agent-python/build-spec.yaml"
+    build_spec_file = "voice-pipeline-agent-python/build_spec.yaml"
     image          = "OL7_X86_64_STANDARD_10"
   }
 }
