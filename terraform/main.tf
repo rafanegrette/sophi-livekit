@@ -29,7 +29,7 @@ module "devops" {
   }
 
   app_secrets = var.app_secrets
-  
+  region = var.region
   oke_cluster_id = module.oke_cluster.cluster_id
 
   freeform_tags = {

@@ -3,7 +3,7 @@ resource "oci_identity_dynamic_group" "devops_services" {
     description    = "Dynamic group for DevOps services"
     name           = "${var.project_name}-devops-services"
 
-    matching_rule = "ANY {resource.type='devopsbuildpipeline', resource.type='devopsdeploypipeline', resource.compartment.id='${var.compartment_id}'}"
+    matching_rule = "ALL {resource.compartment.id = '${var.compartment_id}', ANY {resource.type = 'devopsdeploypipeline', resource.type = 'devopsbuildpipeline', resource.type = 'devopsrepository', resource.type = 'devopsconnection', resource.type = 'devopstrigger'}}"
 }
 
 resource "oci_identity_policy" "devops_policy" {
@@ -16,6 +16,9 @@ resource "oci_identity_policy" "devops_policy" {
         "allow dynamic-group ${var.project_name}-devops-services to read secret-family in compartment ${var.compartment_name}",
         "allow dynamic-group ${var.project_name}-devops-services to manage repos in compartment ${var.compartment_name}",
         "allow dynamic-group ${var.project_name}-devops-services to manage devops-family in compartment ${var.compartment_name}",
-        "allow dynamic-group ${var.project_name}-devops-services to use log-content in compartment ${var.compartment_name}"
+        "allow dynamic-group ${var.project_name}-devops-services to use log-content in compartment ${var.compartment_name}",
+        "allow dynamic-group ${var.project_name}-devops-services to read generic-artifacts in compartment ${var.compartment_name}",
+        "allow dynamic-group ${var.project_name}-devops-services to read devops-repository in compartment ${var.compartment_name}",
+
     ]
 }

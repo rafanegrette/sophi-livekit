@@ -67,7 +67,7 @@ variable "build_config" {
   default = {
     source_folder   = "voice-pipeline-agent-python"
     timeout_seconds = 3600
-    build_spec_file = "voice-pipeline-agent-python/build_spec.yaml"
+    build_spec_file = "voice-pipeline-agent-python/build-spec.yaml"
     image          = "OL7_X86_64_STANDARD_10"
   }
 }
@@ -117,4 +117,10 @@ variable "app_secrets" {
     deepseek_api_key = string
   })
   sensitive = true
+}
+
+variable "region" {
+  description = "The OCI region where resources will be created"
+  type        = string
+  # no default value, asking user to explicitly set this variable's value
 }

@@ -1,3 +1,22 @@
+locals {
+  # Map full region names to OCIR region codes
+  region_map = {
+    "us-phoenix-1"   = "phx"
+    "us-ashburn-1"   = "iad"
+    "uk-london-1"    = "lhr"
+    "eu-frankfurt-1" = "fra"
+    "ap-tokyo-1"     = "nrt"
+    "ap-seoul-1"     = "icn"
+    "ap-sydney-1"    = "syd"
+    "ap-mumbai-1"    = "bom"
+    "ca-toronto-1"   = "yyz"
+    "sa-saopaulo-1"  = "gru"
+    # Add other regions as needed
+  }
+  ocir_region = local.region_map[var.region]
+  container_registry_url = "${local.ocir_region}.ocir.io/${var.build_pipeline_params.tenancy_namespace}/${var.build_pipeline_params.image_name}"
+}
+
 resource "oci_devops_project" "livekit_devops_project" {
     compartment_id = var.compartment_id
     name           = "livekit-devops-project"
@@ -247,13 +266,8 @@ resource "oci_devops_deploy_pipeline" "livekit_deploy_pipeline" {
         }
         items {
             name            = "CONTAINER_REGISTRY_URL"
-            default_value   = "${var.build_pipeline_params.registry_url}/${var.build_pipeline_params.tenancy_namespace}/${var.build_pipeline_params.image_name}"
+            default_value   = local.container_registry_url
             description     = "Container registry URL"
-        }
-        items {
-            name            = "BUILD_TAG"
-            default_value   = "latest"
-            description     = "Build tag for the container image"
         }
     }
 
