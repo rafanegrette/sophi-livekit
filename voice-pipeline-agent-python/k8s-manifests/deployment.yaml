@@ -17,7 +17,7 @@ spec:
     spec:
       containers:
       - name: livekit-agent
-        image: ${CONTAINER_REGISTRY_URL}
+        image: phx.ocir.io/axjfudnfe7mc/livekit-agent:latest
         env:
         - name: LIVEKIT_API_KEY
           value: "${LIVEKIT_KEY}"
