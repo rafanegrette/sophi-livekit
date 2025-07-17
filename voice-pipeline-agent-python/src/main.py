@@ -1,4 +1,3 @@
-import asyncio
 import logging
 import os
 from dotenv import load_dotenv
@@ -16,9 +15,6 @@ from livekit.plugins import (
     noise_cancellation,
     silero,
 )
-from aiohttp import web
-from aiohttp.web_runner import GracefulExit
-
 
 from agents.assistant import Assistant
 from services.instructions_service import InstructionsService
@@ -29,70 +25,6 @@ else:
     load_dotenv()
 
 logger = logging.getLogger("voice-agent")
-
-health_server_task = None
-
-global_runner = None
-global_site = None
-
-async def health_handler(request):
-    """Health check endpoint for Kubernetes probes"""
-    return web.Response(text="OK", status=200)
-
-# Add this helper function to your file
-def _log_task_exception(task: asyncio.Task) -> None:
-    """Callback to log exceptions from a background task."""
-    try:
-        task.result()
-    except asyncio.CancelledError:
-        pass  # Task cancellation is expected on shutdown, so we can ignore it.
-    except Exception:
-        # This will log the full exception traceback.
-        logger.exception("Exception caught in background health server task")
-
-
-async def start_health_server(proc: JobProcess):
-    """
-    Start a server to handle health checks and gracefully shut it down
-    when the agent worker shuts down.
-    """
-    logger.info("Health server task started.")
-    app = web.Application()
-    app.router.add_get('/health', health_handler)
-    app.router.add_get('/ready', health_handler)
-
-    runner = web.AppRunner(app)
-    await runner.setup()
-    site = web.TCPSite(runner, '0.0.0.0', 8080)
-
-    try:
-        await site.start()
-        logger.info("✅ Health check server is up and running on http://0.0.0.0:8080")
-        
-        # Keep the server running until the worker process begins to shut down
-        await proc.shutdown_event.wait()
-        
-    except asyncio.CancelledError:
-        # This is expected when the application is shutting down gracefully.
-        logger.info("Health server task was cancelled.")
-    except Exception:
-        logger.exception("An exception occurred in the health server task.")
-    finally:
-        logger.info("Shutting down health check server...")
-        await runner.cleanup()
-        logger.info("Health check server shutdown complete.")
-
-
-async def prewarm(proc: JobProcess):
-    """
-    This function is called when the worker starts.
-    We'll start the health check server in a background task.
-    """
-    logger.info("Prewarm hook is executing. Starting health check server...")
-    health_task = asyncio.create_task(start_health_server(proc))
-    
-    # Add the callback to ensure we see any exceptions from the task
-    health_task.add_done_callback(_log_task_exception)
 
 async def entrypoint(ctx: JobContext):
     logger.info(f"connecting to room {ctx.room.name}")
@@ -139,6 +71,7 @@ if __name__ == "__main__":
     cli.run_app(
         WorkerOptions(
             entrypoint_fnc=entrypoint,
-            prewarm_fnc=prewarm,
+            port=8080,
+            host="0.0.0.0"
         ),
     )
