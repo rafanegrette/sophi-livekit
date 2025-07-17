@@ -20,4 +20,6 @@ COPY . .
 COPY entrypoint.sh .
 RUN chmod +x entrypoint.sh
 
+EXPOSE 8080
+
 CMD ["./entrypoint.sh"]
