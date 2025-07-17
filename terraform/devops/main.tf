@@ -55,7 +55,7 @@ resource "oci_devops_build_pipeline" "livekit_build_pipeline" {
     build_pipeline_parameters {
         items {
             name            = "registryUrl"
-            default_value   = var.build_pipeline_params.registry_url
+            default_value   = local.container_registry_url
             description     = "Container registry URL"
         }
         items {
@@ -153,12 +153,11 @@ resource "oci_devops_deploy_artifact" "container_image_artifact" {
     project_id = oci_devops_project.livekit_devops_project.id
     display_name = "${var.project_name}-container-image"
     deploy_artifact_type = "DOCKER_IMAGE"
-    argument_substitution_mode = "NONE"
+    argument_substitution_mode = "SUBSTITUTE_PLACEHOLDERS"
 
     deploy_artifact_source {
         deploy_artifact_source_type = "OCIR"
-        image_uri = var.container_registry.image_uri
-        repository_id = var.container_registry.repository_id
+        image_uri = "${local.container_registry_url}:latest"
     }
     
     freeform_tags = var.freeform_tags
@@ -294,16 +293,16 @@ resource "oci_devops_deploy_artifact" "kubernetes_manifest_artifact" {
     argument_substitution_mode = "SUBSTITUTE_PLACEHOLDERS"
 
     deploy_artifact_source {
-        deploy_artifact_source_type = "GENERIC_ARTIFACT"
-        repository_id = oci_devops_repository.livekit_external_repo.id
-        deploy_artifact_path = var.deploy_config.manifest_path
-        deploy_artifact_version = "latest"
+        deploy_artifact_source_type = "INLINE"
+        base64encoded_content = base64encode(templatefile("${path.module}/templates/deployment.yaml", {
+            container_registry_url = local.container_registry_url
+            project_name = var.project_name
+        }))
     }
     
     freeform_tags = var.freeform_tags
 }
 
-# Deploy stage using Helm charts
 resource "oci_devops_deploy_stage" "kubernetes_deploy_stage" {
     deploy_pipeline_id = oci_devops_deploy_pipeline.livekit_deploy_pipeline.id
     deploy_stage_type = "OKE_DEPLOYMENT"

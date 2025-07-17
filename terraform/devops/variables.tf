@@ -72,25 +72,16 @@ variable "build_config" {
   }
 }
 
-variable "container_registry" {
-  description = "Container registry configuration"
-  type = object({
-    image_uri     = string
-    repository_id = string
-  })
-}
 
 variable "deploy_config" {
   description = "Deployment configuration"
   type = object({
     namespace     = string
     replicas      = string
-    manifest_path = string
   })
   default = {
     namespace     = "livekit"
     replicas      = "1"
-    manifest_path = "voice-pipeline-agent-python/k8s-manifests"
   }
 }
 

@@ -22,11 +22,6 @@ module "devops" {
     repository_url        = "https://github.com/rafanegrette/sophi-livekit"
     branch               = "main"
   }
-  
-  container_registry = {
-    image_uri     = "${var.region}.ocir.io/${module.oke_cluster.container_registry_url}/${module.oke_cluster.container_repository_name}:latest"
-    repository_id = module.oke_cluster.container_repository_id
-  }
 
   app_secrets = var.app_secrets
   region = var.region

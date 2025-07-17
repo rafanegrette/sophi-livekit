@@ -1,0 +1,66 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ${project_name}-agent
+  namespace: $${NAMESPACE}
+spec:
+  replicas: $${REPLICAS}
+  selector:
+    matchLabels:
+      app: ${project_name}-agent
+  template:
+    metadata:
+      labels:
+        app: ${project_name}-agent
+    spec:
+      terminationGracePeriodSeconds: 600
+      containers:
+      - name: ${project_name}-agent
+        image: ${container_registry_url}:latest
+        env:
+        - name: LIVEKIT_KEY
+          value: "$${LIVEKIT_KEY}"
+        - name: LIVEKIT_SECRET
+          value: "$${LIVEKIT_SECRET}"
+        - name: LIVEKIT_URL
+          value: "$${LIVEKIT_URL}"
+        - name: CARTESIA_API_KEY
+          value: "$${CARTESIA_API_KEY}"
+        - name: DEEPGRAM_API_KEY
+          value: "$${DEEPGRAM_API_KEY}"
+        - name: OPENAI_API_KEY
+          value: "$${OPENAI_API_KEY}"
+        - name: DEEPSEEK_API_KEY
+          value: "$${DEEPSEEK_API_KEY}"
+        resources:
+          requests:
+            memory: "512Mi"
+            cpu: "250m"
+          limits:
+            memory: "1Gi"
+            cpu: "500m"
+        livenessProbe:
+          httpGet:
+            path: /
+            port: 8080
+          initialDelaySeconds: 10
+          periodSeconds: 10
+        readinessProbe:
+          httpGet:
+            path: /
+            port: 8080
+          initialDelaySeconds: 5
+          periodSeconds: 10
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: ${project_name}-agent-service
+  namespace: $${NAMESPACE}
+spec:
+  selector:
+    app: ${project_name}-agent
+  ports:
+  - port: 80
+    targetPort: 8080
+  type: ClusterIP
