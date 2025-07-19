@@ -48,6 +48,8 @@ resource "oci_containerengine_node_pool" "oke-node-pool" {
       boot_volume_size_in_gbs = var.boot_volume_size_in_gbs
     }
 
+    ssh_public_key = file(var.ssh_public_key_path)
+
     initial_node_labels {
         key = var.node_label_key
         value = var.node_label_value

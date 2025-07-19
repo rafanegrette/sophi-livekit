@@ -183,3 +183,8 @@ variable "region" {
   description = "The OCI region"
   type        = string
 }
+
+variable "ssh_public_key_path" {
+  type = string
+  default = "~/.ssh/oke_cluester_key.pub"
+}
