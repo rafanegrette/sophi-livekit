@@ -104,3 +104,26 @@ resource "kubernetes_namespace" "app_namespace" {
   
   depends_on = [oci_containerengine_node_pool.oke-node-pool]
 }
+
+resource "kubernetes_secret" "ocir_secret" {
+  depends_on = [kubernetes_namespace.app_namespace]
+
+  metadata {
+    name = "ocir-secret"
+    namespace = var.app_namespace
+  }
+
+  type = "kubernetes.io/dockerconfigjson"
+
+  data = {
+    ".dockerconfigjson" = jsonencode({
+        auths = {
+            "${var.ocir_config.registry}" = {
+                username = var.ocir_config.username
+                password = var.ocir_config.auth_token
+                auth = base64encode("${var.ocir_config.username}:${var.ocir_config.auth_token}")
+            }
+        }
+    })
+  }
+}

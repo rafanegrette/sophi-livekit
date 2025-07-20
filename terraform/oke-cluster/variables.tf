@@ -188,3 +188,12 @@ variable "ssh_public_key_path" {
   type = string
   default = "~/.ssh/oke_cluester_key.pub"
 }
+
+variable "ocir_config" {
+  description = "OCIR configuration for image pull secrets"
+  type = object({
+    username = string
+    auth_token = string
+    registry = string
+  })
+}

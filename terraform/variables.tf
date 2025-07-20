@@ -59,3 +59,9 @@ variable "app_secrets" {
     deepseek_api_key = string
   })
 }
+
+variable "ocir_auth_token" {
+  type = string
+  description = "OCI Auth Token for OCIR accsess"
+  sensitive = true
+}

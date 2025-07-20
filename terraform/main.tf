@@ -1,3 +1,7 @@
+locals {
+  ocir_username = "${data.oci_objectstorage_namespace.current_namespace.namespace}/${data.oci_identity_user.current_user.name}"
+}
+
 module "devops" {
   source = "./devops"
   
@@ -88,4 +92,10 @@ module "oke_cluster" {
   app_namespace = "livekit"
   
   region = var.region
+
+  ocir_config = {
+    username = local.ocir_username
+    auth_token = var.ocir_auth_token
+    registry = "${var.region}.ocir.io"
+  }
 }

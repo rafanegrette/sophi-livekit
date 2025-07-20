@@ -32,6 +32,9 @@ resource "oci_identity_policy" "oke_artifact_policy" {
     
     statements = [
         "allow dynamic-group livekit-oke-cluster to manage repos in compartment ${oci_identity_compartment.tf-compartment.name}",
-        "allow dynamic-group livekit-oke-cluster to read repos in tenancy"
+        "allow dynamic-group livekit-oke-cluster to read repos in tenancy",
+        "allow dynamic-group livekit-oke-cluster to read repos in compartment ${oci_identity_compartment.tf-compartment.name}",
+        "allow dynamic-group livekit-oke-cluster to read objectstorage-namespaces in tenancy",
+        "allow dynamic-group livekit-oke-cluster to use repos in compartment ${oci_identity_compartment.tf-compartment.name}"
     ]
 }

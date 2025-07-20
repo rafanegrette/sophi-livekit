@@ -371,4 +371,3 @@ resource "oci_logging_log" "devops_build_log" {
     
     freeform_tags = var.freeform_tags
 }
-

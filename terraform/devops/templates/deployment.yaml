@@ -14,6 +14,8 @@ spec:
         app: ${project_name}-agent
     spec:
       terminationGracePeriodSeconds: 600
+      imagePullSecrets:
+      - name: ocir-secret
       containers:
       - name: ${project_name}-agent
         image: ${container_registry_url}:latest
