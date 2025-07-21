@@ -22,6 +22,12 @@ steps:
       yum install -y docker-ce docker-ce-cli containerd.io
       service docker start
       chkconfig docker on
+
+      echo "Setting up Docker Buildx for cross-platform builds..."
+      docker buildx create --name multiarch --driver docker-container --use
+      docker buildx inspect --bootstrap
+      
+
       echo "Docker installation completed"
 
   - type: Command
@@ -35,7 +41,7 @@ steps:
       echo "Using tenancy namespace: ${tenancyNamespace}"
 
       # Build images
-      docker build -t ${registryUrl}.ocir.io/${tenancyNamespace}/${imageName}:latest .
+      docker buildx build --platform linux/arm64 -t ${registryUrl}.ocir.io/${tenancyNamespace}/${imageName}:latest .
       echo "=== DOCKER BUILD COMPLETED ==="
       docker images | grep ${imageName}
 
