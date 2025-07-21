@@ -1,4 +1,4 @@
-FROM python:3.13.5
+FROM --platform=linux/arm64 python:3.13.5
 
 ENV GCRYPT_DISABLE_FIPS=1
 ENV LIBGCRYPT_FORCE_FIPS_MODE=0

@@ -35,7 +35,7 @@ steps:
       echo "Using tenancy namespace: ${tenancyNamespace}"
 
       # Build images
-      docker buildx build --platform linux/arm64 -t ${registryUrl}.ocir.io/${tenancyNamespace}/${imageName}:latest .
+      docker build -t ${registryUrl}.ocir.io/${tenancyNamespace}/${imageName}:latest .
       echo "=== DOCKER BUILD COMPLETED ==="
       docker images | grep ${imageName}
 
