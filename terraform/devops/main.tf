@@ -137,6 +137,12 @@ resource "oci_devops_build_pipeline_stage" "build_stage" {
         }
     }
 
+    build_runner_shape_config {
+        build_runner_type = "CUSTOM"
+        ocpus = var.build_config.ocpu
+        memory_in_gbs = var.build_config.memory_in_gbs
+    }
+
     stage_execution_timeout_in_seconds = var.build_config.timeout_seconds
     
     build_spec_file = var.build_config.build_spec_file

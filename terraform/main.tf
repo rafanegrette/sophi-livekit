@@ -22,9 +22,20 @@ module "devops" {
   
   github_config = {
     username              = "rafanegrette"
-    access_token_secret_id = oci_vault_secret.github_pat_secret.id
+    access_token_secret_id = oci_vault_secret.github_pat_secret2.id
     repository_url        = "https://github.com/rafanegrette/sophi-livekit"
     branch               = "main"
+  }
+
+  
+  build_config = {
+    source_folder   = "voice-pipeline-agent-python"
+    timeout_seconds = 3600
+    build_spec_file = "voice-pipeline-agent-python/build_spec.yaml"
+    compute_shape   = "VM.Standard2.1"
+    ocpu            = 1
+    memory_in_gbs   = 6
+    image           = "OL7_X86_64_STANDARD_10"
   }
 
   app_secrets = var.app_secrets
@@ -96,6 +107,6 @@ module "oke_cluster" {
   ocir_config = {
     username = local.ocir_username
     auth_token = var.ocir_auth_token
-    registry = "${var.region}.ocir.io"
+    email = "rafaelnegretteamaya@outlook.com"
   }
 }

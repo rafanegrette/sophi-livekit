@@ -1,3 +1,24 @@
+
+locals {
+  # Map full region names to OCIR region codes
+  region_map = {
+    "us-phoenix-1"   = "phx"
+    "us-ashburn-1"   = "iad" 
+    "uk-london-1"    = "lhr"
+    "eu-frankfurt-1" = "fra"
+    "ap-tokyo-1"     = "nrt"
+    "ap-seoul-1"     = "icn"
+    "ap-sydney-1"    = "syd"
+    "ap-mumbai-1"    = "bom"
+    "ca-toronto-1"   = "yyz"
+    "sa-saopaulo-1"  = "gru"
+  }
+  
+  ocir_region = local.region_map[var.region]
+  ocir_registry = "${local.ocir_region}.ocir.io"
+}
+
+
 # OKE Cluster
 resource "oci_containerengine_cluster" "oke-cluster" {
     compartment_id = var.compartment_id
@@ -109,7 +130,7 @@ resource "kubernetes_secret" "ocir_secret" {
   depends_on = [kubernetes_namespace.app_namespace]
 
   metadata {
-    name = "ocir-secret"
+    name = "ocirsecret"
     namespace = var.app_namespace
   }
 
@@ -118,9 +139,10 @@ resource "kubernetes_secret" "ocir_secret" {
   data = {
     ".dockerconfigjson" = jsonencode({
         auths = {
-            "${var.ocir_config.registry}" = {
+            "${local.ocir_registry}" = {
                 username = var.ocir_config.username
                 password = var.ocir_config.auth_token
+                email = var.ocir_config.email
                 auth = base64encode("${var.ocir_config.username}:${var.ocir_config.auth_token}")
             }
         }

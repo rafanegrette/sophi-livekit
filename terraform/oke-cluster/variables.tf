@@ -194,6 +194,6 @@ variable "ocir_config" {
   type = object({
     username = string
     auth_token = string
-    registry = string
+    email = string
   })
 }

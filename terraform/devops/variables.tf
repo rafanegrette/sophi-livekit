@@ -57,20 +57,30 @@ variable "github_config" {
 }
 
 variable "build_config" {
-  description = "Build configuration"
+  description = "Build configuration for the DevOps pipeline"
   type = object({
     source_folder    = string
     timeout_seconds  = number
     build_spec_file  = string
+    # ⬇️ Add these new attributes for the compute shape
+    compute_shape    = string
+    ocpu             = number
+    memory_in_gbs    = number
     image           = string
   })
   default = {
     source_folder   = "voice-pipeline-agent-python"
     timeout_seconds = 3600
     build_spec_file = "voice-pipeline-agent-python/build_spec.yaml"
-    image          = "OL7_X86_64_STANDARD_10"
+    # ⬇️ Set the default shape to a common ARM shape
+    compute_shape   = "VM.Standard2.1"
+    ocpu            = 1
+    memory_in_gbs   = 6
+    image = "OL7_X86_64_STANDARD_10"
   }
 }
+
+
 
 
 variable "deploy_config" {
