@@ -235,12 +235,12 @@ resource "oci_devops_deploy_pipeline" "livekit_deploy_pipeline" {
         }
         # Add environment variables from app_secrets
         items {
-            name            = "LIVEKIT_KEY"
+            name            = "LIVEKIT_API_KEY"
             default_value   = var.app_secrets.livekit_key
             description     = "LiveKit API Key"
         }
         items {
-            name            = "LIVEKIT_SECRET"
+            name            = "LIVEKIT_API_SECRET"
             default_value   = var.app_secrets.livekit_secret
             description     = "LiveKit API Secret"
         }

@@ -20,10 +20,10 @@ spec:
       - name: ${project_name}-agent
         image: ${container_registry_url}:latest
         env:
-        - name: LIVEKIT_KEY
-          value: "$${LIVEKIT_KEY}"
-        - name: LIVEKIT_SECRET
-          value: "$${LIVEKIT_SECRET}"
+        - name: LIVEKIT_API_KEY
+          value: "$${LIVEKIT_API_KEY}"
+        - name: LIVEKIT_API_SECRET
+          value: "$${LIVEKIT_API_SECRET}"
         - name: LIVEKIT_URL
           value: "$${LIVEKIT_URL}"
         - name: CARTESIA_API_KEY
