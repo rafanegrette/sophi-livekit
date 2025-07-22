@@ -74,8 +74,8 @@ variable "build_config" {
     build_spec_file = "voice-pipeline-agent-python/build_spec.yaml"
     # ⬇️ Set the default shape to a common ARM shape
     compute_shape   = "VM.Standard2.1"
-    ocpu            = 1
-    memory_in_gbs   = 6
+    ocpu            = 2
+    memory_in_gbs   = 12
     image = "OL7_X86_64_STANDARD_10"
   }
 }
