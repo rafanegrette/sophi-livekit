@@ -35,23 +35,23 @@ resource "oci_kms_key" "livekit_key" {
 }
 
 # Create a secret to store the GitHub PAT
-resource "oci_vault_secret" "github_pat_secret2" {
-    compartment_id = oci_identity_compartment.tf-compartment.id
-    secret_name    = "github-pat-secret2"
-    vault_id       = data.oci_kms_vault.livekit_vault.id
-    key_id         = oci_kms_key.livekit_key.id
-    
-    secret_content {
-        content_type = "BASE64"
-        content      = base64encode(var.github_access_token)
-    }
-    
-    freeform_tags = {
-        "Environment" = "development"
-        "Project"     = "livekit"
-    }
-}
-
-#data "oci_vault_secret" "github_pat_secret" {
-#    secret_id = "ocid1.vaultsecret.oc1.phx.amaaaaaaovnrhfyabfwls5to4ivrggsv5g6yzzojp7iodqx6j4e5y7njfj5a" 
+#resource "oci_vault_secret" "github_pat_secret3" {
+#    compartment_id = oci_identity_compartment.tf-compartment.id
+#    secret_name    = "github-pat-secret3"
+#    vault_id       = data.oci_kms_vault.livekit_vault.id
+#    key_id         = oci_kms_key.livekit_key.id
+#    
+#    secret_content {
+#        content_type = "BASE64"
+#        content      = base64encode(var.github_access_token)
+#    }
+#    
+#    freeform_tags = {
+#        "Environment" = "development"
+#        "Project"     = "livekit"
+#    }
 #}
+
+data "oci_vault_secret" "github_pat_secret3" {
+    secret_id = "ocid1.vaultsecret.oc1.phx.amaaaaaaovnrhfyaccr77d22puhqplrhne466uhdtg6hiqllx2lmfcjb4voa" 
+}
