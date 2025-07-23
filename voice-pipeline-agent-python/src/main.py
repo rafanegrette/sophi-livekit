@@ -41,8 +41,12 @@ async def entrypoint(ctx: JobContext):
         metrics.log_metrics(agent_metrics)
         usage_collector.collect(agent_metrics)
 
+    vad = vad=ctx.proc.userdata.get("vad")
+    if not vad:
+        vat = silero.VAD.load()
+    
     session = AgentSession(
-        vad=ctx.proc.userdata["vad"],
+        vad=vad,
         # minimum delay for endpointing, used when turn detector believes the user is done with their turn
         min_endpointing_delay=0.5,
         # maximum delay for endpointing, used when turn detector does not believe the user is done with their turn
