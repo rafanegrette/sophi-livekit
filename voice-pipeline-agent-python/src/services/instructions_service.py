@@ -51,7 +51,7 @@ class InstructionsService:
         time_period = self._get_time_period(now.hour)
         
         try:
-            return self._week_prompts[day_name][time_period]
+            return self._week_prompts[day_name][time_period]['prompt']
         except KeyError:
             print(f"Warning: No prompt found for {day_name} {time_period}, using default")
             return self._default_instructions
