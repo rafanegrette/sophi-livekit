@@ -13,6 +13,11 @@ class Settings:
         self.deepgram_api_key: Optional[str] = os.getenv("DEEPGRAM_API_KEY")
         self.cartesia_api_key: Optional[str] = os.getenv("CARTESIA_API_KEY")
         
+        # Milvus configuration
+        self.milvus_host: Optional[str] = os.getenv("MILVUS_HOST")
+        self.milvus_token: Optional[str] = os.getenv("MILVUS_TOKEN")
+        self.milvus_collection_name: Optional[str] = os.getenv("MILVUS_COLLECTION_NAME")
+        
         # Agent configuration
         self.min_endpointing_delay: float = 0.5
         self.max_endpointing_delay: float = 5.0
