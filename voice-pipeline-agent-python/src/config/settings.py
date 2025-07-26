@@ -16,7 +16,7 @@ class Settings:
         # Milvus configuration
         self.milvus_host: Optional[str] = os.getenv("MILVUS_HOST")
         self.milvus_token: Optional[str] = os.getenv("MILVUS_TOKEN")
-        self.milvus_collection_name: Optional[str] = os.getenv("MILVUS_COLLECTION_NAME")
+        self.milvus_collection_name: str = "Neuromancer"
         
         # Agent configuration
         self.min_endpointing_delay: float = 0.5

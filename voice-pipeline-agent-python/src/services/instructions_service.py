@@ -2,11 +2,12 @@ import json
 import os
 from datetime import datetime
 from typing import Dict, Any
+from .rag_service import RagService
 
 class InstructionsService:
     """Service class for managing assistant instructions and prompts."""
     
-    def __init__(self):
+    def __init__(self, rag_service: RagService = None):
         self._default_instructions = (
             "You are a voice assistant created by LiveKit. Your interface with users will be voice. "
             "You should use short and concise responses, and avoiding usage of unpronouncable punctuation. "
@@ -15,6 +16,7 @@ class InstructionsService:
         
         self._greeting_instructions = "Hey, how can I help you today?"
         self._week_prompts = self._load_week_prompts()
+        self._rag_service = rag_service
     
     def _load_week_prompts(self) -> Dict[str, Any]:
         """Load week prompts from JSON file."""
@@ -51,7 +53,40 @@ class InstructionsService:
         time_period = self._get_time_period(now.hour)
         
         try:
-            return self._week_prompts[day_name][time_period]['prompt']
+            base_prompt = self._week_prompts[day_name][time_period]['prompt']
+            
+            # If RAG service is available, enhance the prompt with book extracts
+            if self._rag_service:
+                try:
+                    query = self._week_prompts[day_name][time_period]['query']
+                    rag_results = self._rag_service.search_by_text(query, limit=3)
+                    
+                    # Format the enhanced prompt
+                    enhanced_prompt = base_prompt
+                    
+                    if rag_results:
+                        # Extract text content from RAG results
+                        book_extracts = []
+                        for result in rag_results:
+                            # Assuming the text content is in a field called 'text' or 'content'
+                            content = result.get('text') or result.get('content') or str(result.get('entity', {}))
+                            if content and content.strip():
+                                book_extracts.append(content.strip())
+                        
+                        if book_extracts:
+                            enhanced_prompt += f"\n\n{'='*50}\nRELEVANT BOOK EXTRACTS:\n{'='*50}\n\n"
+                            for i, extract in enumerate(book_extracts, 1):
+                                enhanced_prompt += f"Extract {i}:\n{extract}\n\n"
+                            enhanced_prompt += f"{'='*50}\n"
+                    
+                    return enhanced_prompt
+                    
+                except Exception as e:
+                    print(f"Warning: RAG service error, using base prompt: {e}")
+                    return base_prompt
+            
+            return base_prompt
+            
         except KeyError:
             print(f"Warning: No prompt found for {day_name} {time_period}, using default")
             return self._default_instructions

@@ -18,6 +18,8 @@ from livekit.plugins import (
 
 from agents.assistant import Assistant
 from services.instructions_service import InstructionsService
+from services.rag_service import RagService
+from config.settings import Settings
 
 if os.path.exists(".env.local"):
     load_dotenv(dotenv_path=".env.local")
@@ -57,7 +59,16 @@ async def entrypoint(ctx: JobContext):
     session.on("metrics_collected", on_metrics_collected)
 
     # Create services
-    instructions_service = InstructionsService()
+    try:
+        # Initialize RAG service with proper error handling
+        settings = Settings()
+        rag_service = RagService(settings=settings)
+        logger.info("RAG service initialized successfully")
+    except Exception as e:
+        logger.warning(f"Failed to initialize RAG service: {e}. Instructions service will work without RAG.")
+        rag_service = None
+    
+    instructions_service = InstructionsService(rag_service=rag_service)
 
     await session.start(
         room=ctx.room,
