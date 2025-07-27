@@ -16,8 +16,8 @@ from livekit.plugins import (
     silero,
 )
 
-from .agents.assistant import Assistant
-from .services.instructions_service import InstructionsService
+from agents.assistant import Assistant
+from services.instructions_service import InstructionsService
 
 if os.path.exists(".env.local"):
     load_dotenv(dotenv_path=".env.local")

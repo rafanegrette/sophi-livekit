@@ -1,7 +1,7 @@
 import logging
 from typing import Optional, Dict, Any
 from pymilvus import connections, Collection, MilvusException
-from src.config.settings import Settings
+from config.settings import Settings
 
 logger = logging.getLogger(__name__)
 

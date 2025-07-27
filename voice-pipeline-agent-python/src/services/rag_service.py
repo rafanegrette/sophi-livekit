@@ -1,7 +1,7 @@
 import logging
 from typing import List, Dict, Any, Optional
 from sentence_transformers import SentenceTransformer
-from src.config.settings import Settings
+from config.settings import Settings
 from .milvus_connection import MilvusConnectionManager
 
 logger = logging.getLogger(__name__)
