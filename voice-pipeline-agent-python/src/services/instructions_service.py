@@ -7,7 +7,7 @@ from .rag_service import RagService
 class InstructionsService:
     """Service class for managing assistant instructions and prompts."""
     
-    def __init__(self, rag_service: RagService = None):
+    def __init__(self):
         self._default_instructions = (
             "You are a voice assistant created by LiveKit. Your interface with users will be voice. "
             "You should use short and concise responses, and avoiding usage of unpronouncable punctuation. "
@@ -16,7 +16,15 @@ class InstructionsService:
         
         self._greeting_instructions = "Hey, how can I help you today?"
         self._week_prompts = self._load_week_prompts()
-        self._rag_service = rag_service
+        self._rag_service = self._initialize_rag_service()
+    
+    def _initialize_rag_service(self) -> RagService:
+        """Initialize the RAG service."""
+        try:
+            return RagService()
+        except Exception as e:
+            print(f"Warning: Failed to initialize RAG service: {e}")
+            return None
     
     def _load_week_prompts(self) -> Dict[str, Any]:
         """Load week prompts from JSON file."""
