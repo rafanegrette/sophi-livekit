@@ -67,7 +67,7 @@ class InstructionsService:
             if self._rag_service:
                 try:
                     query = self._week_prompts[day_name][time_period]['query']
-                    rag_results = self._rag_service.search_by_text(query, limit=3)
+                    rag_results = self._rag_service.search_by_text(query, limit=2)
                     
                     # Format the enhanced prompt
                     enhanced_prompt = base_prompt
