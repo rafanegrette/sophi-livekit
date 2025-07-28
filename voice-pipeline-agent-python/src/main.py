@@ -41,9 +41,9 @@ async def entrypoint(ctx: JobContext):
         metrics.log_metrics(agent_metrics)
         usage_collector.collect(agent_metrics)
 
-    vad = vad=ctx.proc.userdata.get("vad")
+    vad = ctx.proc.userdata.get("vad")
     if not vad:
-        vat = silero.VAD.load()
+        vad = silero.VAD.load()
     
     session = AgentSession(
         vad=vad,

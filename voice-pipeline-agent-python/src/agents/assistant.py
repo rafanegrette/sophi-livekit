@@ -9,7 +9,7 @@ from livekit import rtc
 from typing import AsyncIterable
 
 from services.instructions_service import InstructionsService
-from services.prompt_postprocessor import PromptPostprocessor
+from src.services.text_preprocessor import TTSPreprocessor
 
 
 class Assistant(Agent):
@@ -19,7 +19,7 @@ class Assistant(Agent):
         # Learn more and pick the best one for your app:
         # https://docs.livekit.io/agents/plugins
         self.instructions_service = instructions_service
-        self.prompt_postprocessor = PromptPostprocessor()
+        self.prompt_postprocessor = TTSPreprocessor()
         
         super().__init__(
             instructions=self.instructions_service.get_system_instructions(),
@@ -53,3 +53,15 @@ class Assistant(Agent):
         # Use the default TTS node implementation with our processed text
         async for frame in Agent.default.tts_node(self, processed_text(), model_settings):
             yield frame
+
+    async def transcription_node(
+        self, text: AsyncIterable[str], model_settings: ModelSettings
+    ) -> AsyncIterable[str]:
+        """
+        Override the transcription node to send original, unprocessed text to transcriptions.
+        This ensures that transcriptions show the original LLM output while TTS gets 
+        the processed text for better pronunciation.
+        """
+        # Pass through the original text without any preprocessing
+        async for text_chunk in text:
+            yield text_chunk

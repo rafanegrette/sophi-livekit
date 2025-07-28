@@ -3,7 +3,7 @@ import os
 from datetime import datetime
 from typing import Dict, Any
 from .rag_service import RagService
-from .prompt_postprocessor import PromptPostprocessor
+from .text_preprocessor import TTSPreprocessor
 
 class InstructionsService:
     """Service class for managing assistant instructions and prompts."""
@@ -18,7 +18,7 @@ class InstructionsService:
         self._greeting_instructions = "Hey, how can I help you today?"
         self._week_prompts = self._load_week_prompts()
         self._rag_service = self._initialize_rag_service()
-        self._prompt_postprocessor = PromptPostprocessor()
+        self._prompt_postprocessor = TTSPreprocessor()
     
     def _initialize_rag_service(self) -> RagService:
         """Initialize the RAG service."""
