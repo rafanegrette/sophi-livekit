@@ -3,6 +3,7 @@ import os
 from datetime import datetime
 from typing import Dict, Any
 from .rag_service import RagService
+from .prompt_postprocessor import PromptPostprocessor
 
 class InstructionsService:
     """Service class for managing assistant instructions and prompts."""
@@ -17,6 +18,7 @@ class InstructionsService:
         self._greeting_instructions = "Hey, how can I help you today?"
         self._week_prompts = self._load_week_prompts()
         self._rag_service = self._initialize_rag_service()
+        self._prompt_postprocessor = PromptPostprocessor()
     
     def _initialize_rag_service(self) -> RagService:
         """Initialize the RAG service."""
@@ -52,7 +54,7 @@ class InstructionsService:
             return "afternoon"
     
     def _get_current_prompt(self) -> str:
-        """Get the current prompt based on day and time."""
+        """Get the current raw prompt based on day and time (without processing)."""
         if not self._week_prompts:
             return self._default_instructions
         
@@ -101,7 +103,8 @@ class InstructionsService:
     
     def get_system_instructions(self) -> str:
         """Get the system instructions for the assistant based on current time."""
-        return self._get_current_prompt()
+        raw_prompt = self._get_current_prompt()
+        return self._prompt_postprocessor.process_prompt(raw_prompt)
     
     def get_greeting_instructions(self) -> str:
         return "Hello, let's begin the lesson"
