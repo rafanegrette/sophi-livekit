@@ -63,20 +63,11 @@ class PromptPostprocessor:
         return text
     
     def _process_newlines(self, text: str) -> str:
-        """
-        Process newline sequences in the text.
-        Converts \\n\\n (literal backslash-n sequences) to actual line breaks.
-        
-        Args:
-            text (str): Input text
-            
-        Returns:
-            str: Text with newline sequences processed
-        """
+
         # Replace literal \n\n with actual newlines
-        text = text.replace('\\n\\n', '\n\n')
+        text = text.replace('\n\n', '.')
         # Also handle single \n if needed
-        text = text.replace('\\n', '\n')
+        text = text.replace('\n', '.')
         return text
     
     def add_replacement(self, old_value: str, new_value: str) -> None:
