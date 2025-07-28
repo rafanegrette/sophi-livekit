@@ -1,12 +1,15 @@
-from livekit.agents import Agent
+from livekit.agents import Agent, ModelSettings
 from livekit.plugins import (
     cartesia,
     openai,
     deepgram,
 )
 from livekit.plugins.turn_detector.multilingual import MultilingualModel
+from livekit import rtc
+from typing import AsyncIterable
 
 from services.instructions_service import InstructionsService
+from services.prompt_postprocessor import PromptPostprocessor
 
 
 class Assistant(Agent):
@@ -16,6 +19,7 @@ class Assistant(Agent):
         # Learn more and pick the best one for your app:
         # https://docs.livekit.io/agents/plugins
         self.instructions_service = instructions_service
+        self.prompt_postprocessor = PromptPostprocessor()
         
         super().__init__(
             instructions=self.instructions_service.get_system_instructions(),
@@ -32,3 +36,20 @@ class Assistant(Agent):
             instructions=self.instructions_service.get_greeting_instructions(), 
             allow_interruptions=True
         )
+
+    async def tts_node(
+        self, text: AsyncIterable[str], model_settings: ModelSettings
+    ) -> AsyncIterable[rtc.AudioFrame]:
+        """
+        Override the TTS node to apply prompt postprocessing to LLM output 
+        before it goes to TTS synthesis.
+        """
+        async def processed_text():
+            async for text_chunk in text:
+                # Apply prompt postprocessing to each text chunk from the LLM
+                processed_chunk = self.prompt_postprocessor.process_prompt(text_chunk)
+                yield processed_chunk
+        
+        # Use the default TTS node implementation with our processed text
+        async for frame in Agent.default.tts_node(self, processed_text(), model_settings):
+            yield frame
