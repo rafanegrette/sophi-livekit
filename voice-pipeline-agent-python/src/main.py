@@ -51,6 +51,7 @@ async def entrypoint(ctx: JobContext):
         min_endpointing_delay=0.5,
         # maximum delay for endpointing, used when turn detector does not believe the user is done with their turn
         max_endpointing_delay=5.0,
+        use_tts_aligned_transcript=True
     )
 
     # Trigger the on_metrics_collected function when metrics are collected

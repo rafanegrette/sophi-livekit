@@ -55,22 +55,26 @@ class TTSPreprocessor:
         processed_text = text
         
         # Step 1: Convert markdown to plain text if needed
-        if is_markdown:
-            processed_text = self._convert_markdown_to_plain(processed_text)
+        processed_text = self._convert_markdown_to_plain(processed_text)
         
         # Step 2: Apply TTS-specific transformations
-        processed_text = self._remove_forward_slashes(processed_text)
+        processed_text = self._replace_book_title(processed_text)
+        processed_text = self._remove_stars(processed_text)
+        processed_text = self._handle_forward_slashes(processed_text)
         processed_text = self._normalize_dates(processed_text)
         processed_text = self._normalize_times(processed_text)
         processed_text = self._handle_urls_and_emails(processed_text)
+        #print('phase 1: ', processed_text)
         processed_text = self._emphasize_questions(processed_text)
         processed_text = self._remove_quotation_marks(processed_text)
+        processed_text = self._handle_colons(processed_text)
         processed_text = self._apply_custom_pronunciations(processed_text)
-        processed_text = self._add_appropriate_punctuation(processed_text)
+        #processed_text = self._add_appropriate_punctuation(processed_text)
+        #print('phase 2: ', processed_text)
         processed_text = self._handle_url_email_questions(processed_text)
         processed_text = self._handle_double_dots(processed_text)
         processed_text = self._handle_newlines(processed_text)
-        
+        #print('phase 3: ', processed_text)
         return processed_text.strip()
     
     def _convert_markdown_to_plain(self, text: str) -> str:
@@ -82,9 +86,34 @@ class TTSPreprocessor:
         
         return processed
     
-    def _remove_forward_slashes(self, text: str) -> str:
+    def _remove_stars(self, text: str) -> str:
+        processed = text
+        processed = processed.replace("*", "")
+        return processed
+    
+    def _replace_book_title(self, text: str) -> str:
+        processed = text
+        processed = processed.replace("[LITERATURE_BOOK]", "Neuromancer")
+        return processed
+    
+    def _handle_forward_slashes(self, text: str) -> str:
         """Remove forward slashes (/) from the text."""
-        return text.replace('/', '')
+        #return text.replace('/', ' ')
+        date_matches = []
+        temp_text = text
+
+        for match in self.date_pattern.finditer(text):
+            placeholder = f"__DATE_PLACEHOLDER_{len(date_matches)}__"
+            date_matches.append(match.group(0))
+            temp_text = temp_text.replace(match.group(0), placeholder, 1)
+
+        temp_text = temp_text.replace('/', '-')
+
+        for i, date_match in enumerate(date_matches):
+            placeholder = f"__DATE_PLACEHOLDER_{i}__"
+            temp_text = temp_text.replace(placeholder, date_match)
+
+        return temp_text
     
     def _normalize_dates(self, text: str) -> str:
         """Convert dates to MM/DD/YYYY format."""
@@ -145,6 +174,10 @@ class TTSPreprocessor:
         # Remove smart quotes and regular quotes that appear to be formatting
         text = text.replace('"', '').replace('"', '').replace('"', '')
         text = text.replace("'", '').replace("'", '').replace("'", '')
+        return text
+    
+    def _handle_colons(self, text: str) -> str:
+        text = text.replace(":", '-')
         return text
     
     def _apply_custom_pronunciations(self, text: str) -> str:

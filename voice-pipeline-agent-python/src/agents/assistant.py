@@ -9,7 +9,7 @@ from livekit import rtc
 from typing import AsyncIterable
 
 from services.instructions_service import InstructionsService
-from src.services.text_preprocessor import TTSPreprocessor
+from services.text_preprocessor import TTSPreprocessor
 
 
 class Assistant(Agent):
@@ -25,7 +25,7 @@ class Assistant(Agent):
             instructions=self.instructions_service.get_system_instructions(),
             stt=deepgram.STT(),
             llm=openai.LLM.with_deepseek(model="deepseek-chat"),
-            tts=cartesia.TTS(),
+            tts=cartesia.TTS(model="sonic-2"),
             # use LiveKit's transformer-based turn detector
             turn_detection=MultilingualModel(),
         )
@@ -47,21 +47,23 @@ class Assistant(Agent):
         async def processed_text():
             async for text_chunk in text:
                 # Apply prompt postprocessing to each text chunk from the LLM
-                processed_chunk = self.prompt_postprocessor.process_prompt(text_chunk)
+                processed_chunk = self.prompt_postprocessor.process_for_tts(text_chunk)
+                #print("tts_node : ", processed_chunk)
                 yield processed_chunk
         
         # Use the default TTS node implementation with our processed text
         async for frame in Agent.default.tts_node(self, processed_text(), model_settings):
             yield frame
 
-    async def transcription_node(
-        self, text: AsyncIterable[str], model_settings: ModelSettings
-    ) -> AsyncIterable[str]:
-        """
-        Override the transcription node to send original, unprocessed text to transcriptions.
-        This ensures that transcriptions show the original LLM output while TTS gets 
-        the processed text for better pronunciation.
-        """
-        # Pass through the original text without any preprocessing
-        async for text_chunk in text:
-            yield text_chunk
+    #async def transcription_node(
+    #    self, text: AsyncIterable[str], model_settings: ModelSettings
+    #) -> AsyncIterable[str]:
+    #    """
+    #    Override the transcription node to send original, unprocessed text to transcriptions.
+    #    This ensures that transcriptions show the original LLM output while TTS gets 
+    #    the processed text for better pronunciation.
+    #    """
+    #    # Pass through the original text without any preprocessing
+    #    async for text_chunk in text:
+    #        print("transcription: ", text_chunk)
+    #        yield text_chunk

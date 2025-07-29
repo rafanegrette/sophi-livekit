@@ -104,7 +104,7 @@ class InstructionsService:
     def get_system_instructions(self) -> str:
         """Get the system instructions for the assistant based on current time."""
         raw_prompt = self._get_current_prompt()
-        return self._prompt_postprocessor.process_prompt(raw_prompt)
+        return self._prompt_postprocessor.process_for_tts(raw_prompt)
     
     def get_greeting_instructions(self) -> str:
         return "Hello, let's begin the lesson"

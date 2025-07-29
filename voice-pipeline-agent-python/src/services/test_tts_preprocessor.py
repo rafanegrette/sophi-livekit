@@ -2,9 +2,7 @@
 """
 Test script for the TTSPreprocessor class to demonstrate Cartesia TTS optimization.
 """
-
-from prompt_postprocessor import TTSPreprocessor
-
+from text_preprocessor import TTSPreprocessor
 
 def test_tts_preprocessor():
     """Test the TTSPreprocessor with various text examples."""
@@ -12,7 +10,7 @@ def test_tts_preprocessor():
     tts_processor = TTSPreprocessor()
     
     # Test cases
-    test_cases = [
+    test_cases2 = [
         {
             "name": "Markdown with various elements",
             "text": """# Meeting Summary
@@ -25,7 +23,7 @@ Are you ready?""",
         },
         {
             "name": "Plain text with dates and times",
-            "text": "The event is on 12/25/2023 at 7:00PM. Contact us at info@example.com if you have questions?",
+            "text": "The **event** is on 12/25/2023 at 7:00PM. Contact: us at info@example.com if you have questions?",
             "is_markdown": False
         },
         {
@@ -51,6 +49,14 @@ Are you ready?""",
         {
             "name": "Text with forward slashes",
             "text": "The pronunciation is /th/ and /sh/ sounds. Also /example/ word.",
+            "is_markdown": False
+        }
+    ]
+
+    test_cases = [
+        {
+            "name": "Text with double dots and newlines",
+            "text": "*",
             "is_markdown": False
         }
     ]
