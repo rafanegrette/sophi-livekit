@@ -38,45 +38,26 @@ class Assistant(Agent):
             allow_interruptions=True
         )
 
-    async def tts_node(
+    async def llm_node(
         self, text: AsyncIterable[str], model_settings: ModelSettings
-    ) -> AsyncIterable[rtc.AudioFrame]:
+    ) -> AsyncIterable[str]:
         """
-        Override the TTS node to apply prompt postprocessing to LLM output 
-        before it goes to TTS synthesis. This implementation ensures proper
+        Override the LLM node to apply prompt postprocessing to LLM output 
+        before it goes downstream to TTS. This implementation ensures proper
         spacing between chunks while maintaining real-time streaming.
         """
-        async def processed_text():
-            last_chunk_ended_with_space = True  # Start assuming we're at word boundary
+        # First get the LLM output using the default implementation
+        llm_output = Agent.default.llm_node(self, text, model_settings)
+                
+        async for text_chunk in llm_output:
+            if not text_chunk:
+                continue
             
-            async for text_chunk in text:
-                if not text_chunk:
-                    continue
-                
-                # Check if we need to add a space before this chunk
-                chunk_starts_with_space = text_chunk.startswith(' ')
-                chunk_ends_with_space = text_chunk.endswith(' ')
-                
-                # If the last chunk didn't end with space and this chunk doesn't start with space,
-                # we likely have a word boundary issue - add a space
-                if not last_chunk_ended_with_space and not chunk_starts_with_space:
-                    # But be smart about it - don't add space if the chunk starts with punctuation
-                    if not text_chunk[0] in '.,!?;:)]}"\'-':
-                        text_chunk = ' ' + text_chunk
-                
-                # Apply prompt postprocessing to the chunk
-                processed_chunk = self.prompt_postprocessor.process_for_tts(text_chunk)
-                
-                # Update state for next iteration
-                last_chunk_ended_with_space = chunk_ends_with_space or processed_chunk.endswith(' ')
-                
-                # Yield the processed chunk immediately for real-time streaming
-                if processed_chunk:
-                    yield processed_chunk
-        
-        # Use the default TTS node implementation with our processed text
-        async for frame in Agent.default.tts_node(self, processed_text(), model_settings):
-            yield frame
+            processed_chunk = self.prompt_postprocessor.process_for_tts(text_chunk)
+                   
+            # Yield the processed chunk immediately for real-time streaming
+            if processed_chunk:
+                yield processed_chunk
 
     #async def transcription_node(
     #    self, text: AsyncIterable[str], model_settings: ModelSettings
