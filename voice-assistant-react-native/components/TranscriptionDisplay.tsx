@@ -1,5 +1,6 @@
 import React from 'react';
 import { View, Text, useColorScheme, StyleSheet } from 'react-native';
+import Markdown from 'react-native-markdown-display';
 
 interface UserTranscriptionProps {
   text: string;
@@ -23,11 +24,19 @@ export const UserTranscriptionText: React.FC<UserTranscriptionProps> = ({ text }
 
   if (!text) return null;
 
+  const markdownStyle = {
+    body: [styles.userTranscription, themeStyle, themeTextStyle],
+    paragraph: { margin: 0 },
+    text: themeTextStyle,
+  };
+
   return (
     <View style={styles.userTranscriptionContainer}>
-      <Text style={[styles.userTranscription, themeStyle, themeTextStyle]}>
-        {text}
-      </Text>
+      <View style={[styles.userTranscription, themeStyle]}>
+        <Markdown style={markdownStyle}>
+          {text}
+        </Markdown>
+      </View>
     </View>
   );
 };
@@ -42,8 +51,18 @@ export const AgentTranscriptionText: React.FC<AgentTranscriptionProps> = ({ text
 
   if (!text) return null;
 
+  const markdownStyle = {
+    body: [styles.agentTranscription, themeTextStyle],
+    paragraph: { margin: 0 },
+    text: themeTextStyle,
+  };
+
   return (
-    <Text style={[styles.agentTranscription, themeTextStyle]}>{text}</Text>
+    <View style={{ margin: 16 }}>
+      <Markdown style={markdownStyle}>
+        {text}
+      </Markdown>
+    </View>
   );
 };
 
@@ -69,7 +88,7 @@ const styles = StyleSheet.create({
   agentTranscription: {
     fontSize: 20,
     textAlign: 'left',
-    margin: 16,
+    margin: 0, // Margin is now handled by the parent View
   },
   lightThemeText: {
     color: '#000000',
