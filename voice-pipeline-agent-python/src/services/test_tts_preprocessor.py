@@ -56,7 +56,7 @@ Are you ready?""",
     test_cases = [
         {
             "name": "Text with double dots and newlines",
-            "text": "*",
+            "text": '*',
             "is_markdown": False
         }
     ]

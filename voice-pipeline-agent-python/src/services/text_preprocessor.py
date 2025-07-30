@@ -58,7 +58,7 @@ class TTSPreprocessor:
         processed_text = self._convert_markdown_to_plain(processed_text)
         
         # Step 2: Apply TTS-specific transformations
-        processed_text = self._replace_book_title(processed_text)
+        processed_text = self.replace_book_title(processed_text)
         processed_text = self._remove_stars(processed_text)
         processed_text = self._handle_forward_slashes(processed_text)
         processed_text = self._normalize_dates(processed_text)
@@ -75,7 +75,7 @@ class TTSPreprocessor:
         processed_text = self._handle_double_dots(processed_text)
         processed_text = self._handle_newlines(processed_text)
         #print('phase 3: ', processed_text)
-        return processed_text.strip()
+        return processed_text
     
     def _convert_markdown_to_plain(self, text: str) -> str:
         """Convert Markdown text to plain text."""
@@ -91,7 +91,7 @@ class TTSPreprocessor:
         processed = processed.replace("*", "")
         return processed
     
-    def _replace_book_title(self, text: str) -> str:
+    def replace_book_title(self, text: str) -> str:
         processed = text
         processed = processed.replace("[LITERATURE_BOOK]", "Neuromancer")
         return processed

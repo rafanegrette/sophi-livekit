@@ -52,7 +52,7 @@ class RagService:
             logger.error(f"Error generating embedding: {e}")
             raise
     
-    def search_by_text(self, query_text: str, limit: int = 5, 
+    def search_by_text(self, query_text: str, limit: int = 1, 
                       output_fields: Optional[List[str]] = None,
                       score_threshold: float = 0.0) -> List[Dict[str, Any]]:
         """Search for documents by text content using semantic embedding search.

@@ -38,36 +38,53 @@ class Assistant(Agent):
             allow_interruptions=True
         )
 
-    async def llm_node(
+    #async def llm_node(
+    #    self, chat_ctx, tools, model_settings
+    #) -> AsyncIterable[str]:
+    #    """
+    #    Override the LLM node to apply prompt postprocessing to LLM output 
+    #    before it goes downstream to TTS. This implementation ensures proper
+    #    spacing between chunks while maintaining real-time streaming.
+    #    """
+    #    # First get the LLM output using the default implementation
+    #    llm_output = Agent.default.llm_node(self, chat_ctx, tools, model_settings)
+    #            
+    #    async for chunk in llm_output:
+    #        if not chunk:
+    #            continue
+    #        
+    #        if hasattr(chunk, 'delta') and chunk.delta:
+    #            delta = chunk.delta
+    #            if hasattr(delta, 'content'):
+    #                text_content = delta.content
+    #                if text_content:
+    #                    processed_content = self.prompt_postprocessor.process_for_tts(text_content)
+    #               
+    #                delta.content = processed_content
+    #                print("Process Content : ", processed_content)
+    #        print("Chunk: ", chunk)
+    #        yield chunk
+
+    async def tts_node (
+            self, text: AsyncIterable[str], model_settings: ModelSettings
+    ) -> AsyncIterable[rtc.AudioFrame]:
+        
+        async def processed_text():
+            async for text_chunk in text:
+                processed_chunk = self.prompt_postprocessor.process_for_tts(text_chunk)
+                yield processed_chunk
+        
+        async for audio_frame in Agent.default.tts_node(self, processed_text(), model_settings) :
+            yield audio_frame
+    async def transcription_node(
         self, text: AsyncIterable[str], model_settings: ModelSettings
     ) -> AsyncIterable[str]:
         """
-        Override the LLM node to apply prompt postprocessing to LLM output 
-        before it goes downstream to TTS. This implementation ensures proper
-        spacing between chunks while maintaining real-time streaming.
+        Override the transcription node to send original, unprocessed text to transcriptions.
+        This ensures that transcriptions show the original LLM output while TTS gets 
+        the processed text for better pronunciation.
         """
-        # First get the LLM output using the default implementation
-        llm_output = Agent.default.llm_node(self, text, model_settings)
-                
-        async for text_chunk in llm_output:
-            if not text_chunk:
-                continue
-            
-            processed_chunk = self.prompt_postprocessor.process_for_tts(text_chunk)
-                   
-            # Yield the processed chunk immediately for real-time streaming
-            if processed_chunk:
-                yield processed_chunk
-
-    #async def transcription_node(
-    #    self, text: AsyncIterable[str], model_settings: ModelSettings
-    #) -> AsyncIterable[str]:
-    #    """
-    #    Override the transcription node to send original, unprocessed text to transcriptions.
-    #    This ensures that transcriptions show the original LLM output while TTS gets 
-    #    the processed text for better pronunciation.
-    #    """
-    #    # Pass through the original text without any preprocessing
-    #    async for text_chunk in text:
+        # Pass through the original text without any preprocessing
+        async for text_chunk in text:
     #        print("transcription: ", text_chunk)
-    #        yield text_chunk
+            yield text_chunk
