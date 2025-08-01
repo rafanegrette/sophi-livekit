@@ -57,6 +57,8 @@ variable "app_secrets" {
     deepgram_api_key = string
     openai_api_key = string
     deepseek_api_key = string
+    milvus_host = string
+    milvus_token = string
   })
 }
 

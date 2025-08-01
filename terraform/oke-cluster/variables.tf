@@ -83,13 +83,13 @@ variable "node_shape" {
 variable "node_memory_in_gbs" {
   description = "Memory in GBs for each node"
   type        = number
-  default     = 6
+  default     = 12
 }
 
 variable "node_ocpus" {
   description = "Number of OCPUs for each node"
   type        = number
-  default     = 1
+  default     = 4
 }
 
 variable "node_image_id" {

@@ -19,6 +19,7 @@ resource "oci_identity_policy" "devops_policy" {
         "allow dynamic-group ${var.project_name}-devops-services to use log-content in compartment ${var.compartment_name}",
         "allow dynamic-group ${var.project_name}-devops-services to read generic-artifacts in compartment ${var.compartment_name}",
         "allow dynamic-group ${var.project_name}-devops-services to read devops-repository in compartment ${var.compartment_name}",
-
+        "Allow dynamic-group ${var.project_name}-devops-services to read secret-bundles in compartment ${var.compartment_name}",
+        "Allow dynamic-group ${var.project_name}-devops-services to use vaults in compartment ${var.compartment_name}"
     ]
 }

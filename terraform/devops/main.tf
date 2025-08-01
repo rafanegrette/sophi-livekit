@@ -274,6 +274,16 @@ resource "oci_devops_deploy_pipeline" "livekit_deploy_pipeline" {
             default_value   = local.container_registry_url
             description     = "Container registry URL"
         }
+        items {
+            name            = "MILVUS_HOST"
+            default_value   = var.app_secrets.milvus_host
+            description     = "Milvus url"  
+        }
+        items {
+            name            = "MILVUS_TOKEN"
+            default_value   = var.app_secrets.milvus_token
+            description     = "Milvus token"  
+        }
     }
 
     freeform_tags = var.freeform_tags

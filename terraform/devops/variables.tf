@@ -74,7 +74,7 @@ variable "build_config" {
     build_spec_file = "voice-pipeline-agent-python/build_spec.yaml"
     # ⬇️ Set the default shape to a common ARM shape
     compute_shape   = "VM.Standard2.1"
-    ocpu            = 2
+    ocpu            = 4
     memory_in_gbs   = 12
     image = "OL7_X86_64_STANDARD_10"
   }
@@ -114,8 +114,10 @@ variable "app_secrets" {
     livekit_url        = string
     cartesia_api_key   = string
     deepgram_api_key   = string
-    openai_api_key = string
-    deepseek_api_key = string
+    openai_api_key     = string
+    deepseek_api_key   = string
+    milvus_host        = string
+    milvus_token       = string
   })
   sensitive = true
 }

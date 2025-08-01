@@ -34,13 +34,17 @@ spec:
           value: "$${OPENAI_API_KEY}"
         - name: DEEPSEEK_API_KEY
           value: "$${DEEPSEEK_API_KEY}"
+        - name: MILVUS_HOST
+          value: "$${MILVUS_HOST}"
+        - name: MILVUS_TOKEN
+          value: "$${MILVUS_TOKEN}"
         resources:
           requests:
-            memory: "1Gi"
-            cpu: "500m"
-          limits:
             memory: "2Gi"
             cpu: "1"
+          limits:
+            memory: "6Gi"
+            cpu: "4"
         ports:
         - containerPort: 8080
 ---

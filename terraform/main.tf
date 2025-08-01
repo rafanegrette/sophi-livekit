@@ -22,7 +22,7 @@ module "devops" {
   
   github_config = {
     username              = "rafanegrette"
-    access_token_secret_id = data.oci_vault_secret.github_pat_secret3.id
+    access_token_secret_id = oci_vault_secret.github_pat_secret2.id
     repository_url        = "https://github.com/rafanegrette/sophi-livekit"
     branch               = "main"
   }
