@@ -95,3 +95,5 @@ yarn-error.*
 app-example
 
 .continue/
+
+voice-assistant-react-native/eas.json

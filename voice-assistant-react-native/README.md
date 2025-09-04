@@ -39,6 +39,52 @@ You'll also need an agent to speak with. Try our sample voice assistant agent fo
 
 In a production environment, you will be responsible for developing a solution to [generate tokens for your users](https://docs.livekit.io/home/server/generating-tokens/) which is integrated with your authentication solution. You should disable your sandbox token server and modify `hooks/useConnectionDetails.ts` to use your own token server.
 
+## Generate APK file
+
+Create a file eas.json in the root. With a content like:
+
+```
+{
+  "cli": {
+    "version": ">= 16.17.4",
+    "appVersionSource": "remote"
+  },
+  "build": {
+    "preview": {
+      "android": {
+        "buildType": "apk"
+      },
+      "environment": "preview",
+      "env": {
+        "EXPO_PUBLIC_LIVEKIT_API_KEY": "YOUR_API_KEY",
+        "EXPO_PUBLIC_LIVEKIT_API_SECRET": "YOUR_API_SECRET",
+        "EXPO_PUBLIC_LIVEKIT_URL": "YOUR_PUBLIC_LIVEKIT_URL"
+      }
+    },
+    "preview2": {
+      "android": {
+        "gradleCommand": ":app:assembleRelease"
+      }
+    },
+    "preview3": {
+      "developmentClient": true
+    },
+    "preview4": {
+      "distribution": "internal"
+    },
+    "production": {}
+  }
+}
+```
+
+
+Then execute : 
+
+```
+eas build --platform android --profile preview
+```
+
 ## Contributing
 
 This template is open source and we welcome contributions! Please open a PR or issue through GitHub, and don't forget to join us in the [LiveKit Community Slack](https://livekit.io/join-slack)!
+
